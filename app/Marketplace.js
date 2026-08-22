@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { nowInBucharest } from "../lib/date";
 
 const CATEGORIES = ["Toți", "Instalator", "Electrician", "Mecanic auto"];
 const SLOTS = ["09:00", "10:30", "11:00", "13:00", "14:30", "16:00"];
@@ -9,9 +10,9 @@ const WEEKDAYS_RO = ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "Sâm"];
 function nextDays(count) {
   const days = [];
   for (let i = 1; i <= count; i++) {
-    const d = new Date();
+    const d = nowInBucharest();
     d.setDate(d.getDate() + i);
-    const iso = d.toISOString().split("T")[0];
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     days.push({ iso, label: WEEKDAYS_RO[d.getDay()], dayNum: d.getDate() });
   }
   return days;

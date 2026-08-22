@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { nowInBucharest, isoOf } from "../../lib/date";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
 const MONTHS_RO = ["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
 
-function isoOf(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 function startOfWeek(d) {
   const day = (d.getDay() + 6) % 7; // Luni = 0
   const monday = new Date(d);
@@ -90,7 +85,7 @@ function Stat({ label, value }) {
 
 function CalendarPanel({ bookings, onUpdateStatus }) {
   const [view, setView] = useState("luna"); // luna | saptamana | zi
-  const [cursor, setCursor] = useState(new Date());
+  const [cursor, setCursor] = useState(nowInBucharest());
 
   const byDate = useMemo(() => {
     const map = {};
@@ -122,7 +117,7 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(-1)}>‹</button>
           <b style={{ color: "var(--paper)", fontFamily: "'Space Grotesk',sans-serif", fontSize: 15 }}>{title}</b>
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(1)}>›</button>
-          <button className="btn btn-outline" style={{ color: "var(--paper)", borderColor: "rgba(243,248,251,.3)", padding: "6px 12px" }} onClick={() => setCursor(new Date())}>Azi</button>
+          <button className="btn btn-outline" style={{ color: "var(--paper)", borderColor: "rgba(243,248,251,.3)", padding: "6px 12px" }} onClick={() => setCursor(nowInBucharest())}>Azi</button>
         </div>
         <div className="cat-row" style={{ marginBottom: 0 }}>
           {["zi", "saptamana", "luna"].map((v) => (
@@ -144,7 +139,7 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
 
 function MonthView({ cursor, byDate, onPickDay }) {
   const cells = monthGrid(cursor.getFullYear(), cursor.getMonth());
-  const todayIso = isoOf(new Date());
+  const todayIso = isoOf(nowInBucharest());
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginBottom: 6 }}>
