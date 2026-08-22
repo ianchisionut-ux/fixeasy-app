@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "../../../../lib/db";
 import { getSession } from "../../../../lib/auth";
+import { stripDiacritics } from "../../../../lib/geo";
 
 export async function GET() {
   const session = await getSession();
@@ -35,7 +36,7 @@ export async function PUT(request) {
        SET business_name = $1, category = $2, city = $3, tags = $4
        WHERE user_id = $5
        RETURNING id, business_name, category, city, tags`,
-      [businessName, category, city, tagsArray, session.id]
+      [businessName, category, stripDiacritics(city.trim()), tagsArray, session.id]
     );
 
     if (result.rows.length === 0) {

@@ -6,18 +6,25 @@ export const dynamic = "force-dynamic";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
+  const city = searchParams.get("city");
 
-  const providersResult =
-    category && category !== "Toți"
-      ? await query(
-          `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
-           FROM provider_profiles WHERE category = $1 ORDER BY rating DESC`,
-          [category]
-        )
-      : await query(
-          `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
-           FROM provider_profiles ORDER BY rating DESC`
-        );
+  const conditions = [];
+  const params = [];
+  if (category && category !== "Toți") {
+    params.push(category);
+    conditions.push(`category = $${params.length}`);
+  }
+  if (city && city !== "Toate orașele") {
+    params.push(city);
+    conditions.push(`city = $${params.length}`);
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const providersResult = await query(
+    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
+     FROM provider_profiles ${where} ORDER BY rating DESC`,
+    params
+  );
 
   const providerIds = providersResult.rows.map((p) => p.id);
   let servicesByProvider = {};

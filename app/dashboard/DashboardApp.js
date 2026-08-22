@@ -75,8 +75,8 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
 function Stat({ label, value }) {
   return (
     <div style={{ background: "#0F3F60", borderRadius: 8, padding: 14, color: "var(--paper)" }}>
-      <b style={{ fontSize: 22, display: "block", fontFamily: "'Space Grotesk',sans-serif" }}>{value}</b>
-      <span style={{ fontSize: 11, color: "rgba(243,248,251,.6)", textTransform: "uppercase", letterSpacing: ".04em", fontFamily: "'IBM Plex Mono',monospace" }}>{label}</span>
+      <b style={{ fontSize: 22, display: "block", fontFamily: "var(--font)" }}>{value}</b>
+      <span style={{ fontSize: 11, color: "rgba(243,248,251,.6)", textTransform: "uppercase", letterSpacing: ".04em", fontFamily: "var(--font)" }}>{label}</span>
     </div>
   );
 }
@@ -115,7 +115,7 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: "1px solid #1C4F73", flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(-1)}>‹</button>
-          <b style={{ color: "var(--paper)", fontFamily: "'Space Grotesk',sans-serif", fontSize: 15 }}>{title}</b>
+          <b style={{ color: "var(--paper)", fontFamily: "var(--font)", fontSize: 15 }}>{title}</b>
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(1)}>›</button>
           <button className="btn btn-outline" style={{ color: "var(--paper)", borderColor: "rgba(243,248,251,.3)", padding: "6px 12px" }} onClick={() => setCursor(nowInBucharest())}>Azi</button>
         </div>
@@ -144,7 +144,7 @@ function MonthView({ cursor, byDate, onPickDay }) {
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginBottom: 6 }}>
         {WEEKDAYS_SHORT.map((w) => (
-          <div key={w} style={{ textAlign: "center", fontSize: 11, color: "rgba(243,248,251,.5)", fontFamily: "'IBM Plex Mono',monospace" }}>{w}</div>
+          <div key={w} style={{ textAlign: "center", fontSize: 11, color: "rgba(243,248,251,.5)", fontFamily: "var(--font)" }}>{w}</div>
         ))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
@@ -163,7 +163,7 @@ function MonthView({ cursor, byDate, onPickDay }) {
                 border: isToday ? "1.5px solid var(--orange)" : "1px solid #1C4F73",
               }}
             >
-              <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "'IBM Plex Mono',monospace", marginBottom: 4 }}>{d.getDate()}</div>
+              <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "var(--font)", marginBottom: 4 }}>{d.getDate()}</div>
               {items.slice(0, 2).map((b) => (
                 <div key={b.id} className={"status " + b.status} style={{ fontSize: 9, marginBottom: 2, display: "block", textAlign: "left", padding: "2px 5px" }}>
                   {b.time}
@@ -194,7 +194,7 @@ function WeekView({ cursor, byDate, onPickDay }) {
         const items = byDate[iso] || [];
         return (
           <div key={iso} onClick={() => onPickDay(d)} style={{ cursor: "pointer", background: "#0B3552", border: "1px solid #1C4F73", borderRadius: 8, padding: 8, minHeight: 140 }}>
-            <div style={{ fontSize: 11, color: "rgba(243,248,251,.6)", marginBottom: 6, fontFamily: "'IBM Plex Mono',monospace" }}>
+            <div style={{ fontSize: 11, color: "rgba(243,248,251,.6)", marginBottom: 6, fontFamily: "var(--font)" }}>
               {WEEKDAYS_SHORT[(d.getDay() + 6) % 7]} {d.getDate()}
             </div>
             {items.map((b) => (

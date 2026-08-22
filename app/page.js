@@ -1,6 +1,6 @@
 import { query } from "../lib/db";
 import { getSession } from "../lib/auth";
-import Marketplace from "./Marketplace";
+import HomeClient from "./HomeClient";
 import SiteHeader from "./SiteHeader";
 
 export const dynamic = "force-dynamic";
@@ -49,20 +49,85 @@ export default async function HomePage() {
     <>
       <SiteHeader session={session} links={[{ href: "#marketplace", label: "Meseriași" }]} />
 
-      <div className="hero">
-        <span className="eyebrow">● {providers.length} meseriași verificați activi azi</span>
-        <h1>Găsești meseriașul potrivit. Programezi în 60 de secunde.</h1>
-        <p>Instalatori, electricieni și mecanici auto verificați — programarea se salvează live, cu status urmărit în dashboard.</p>
-      </div>
+      <HomeClient
+        initialProviders={providers}
+        isLoggedIn={!!session}
+        userRole={session?.role}
+      />
 
-      <section id="marketplace">
+      <section>
         <div className="section-head">
-          <span className="eyebrow" style={{ background: "rgba(44,74,94,.1)", color: "var(--steel)" }}>Prestatori</span>
-          <h2>Alege și programează</h2>
-          <p>Fiecare programare e salvată real prin API — vezi rezultatul în dashboard.</p>
+          <span className="eyebrow" style={{ background: "rgba(44,74,94,.1)", color: "var(--steel)" }}>Proces</span>
+          <h2>Cum funcționează</h2>
+          <p>Pași simpli, indiferent dacă cauți un meseriaș sau vrei mai mulți clienți.</p>
         </div>
-        <Marketplace initialProviders={providers} isLoggedIn={!!session} userRole={session?.role} />
+        <div className="how-split">
+          <div className="how-col client">
+            <h3>Pentru clienți</h3>
+            <div className="how-sub">De la căutare la lucrare finalizată</div>
+            <div className="how-step">
+              <div className="how-num">1</div>
+              <div>
+                <div className="how-step-title">Cauți în zona ta</div>
+                <div className="how-step-text">Filtrezi după meserie și oraș — vezi doar prestatori relevanți pentru tine.</div>
+              </div>
+            </div>
+            <div className="how-step">
+              <div className="how-num">2</div>
+              <div>
+                <div className="how-step-title">Alegi un slot liber</div>
+                <div className="how-step-text">Programezi direct în calendarul prestatorului, fără telefoane.</div>
+              </div>
+            </div>
+            <div className="how-step">
+              <div className="how-num">3</div>
+              <div>
+                <div className="how-step-title">Primești confirmare</div>
+                <div className="how-step-text">Notificare instant, plus status urmărit live în cont.</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="how-col provider">
+            <h3>Pentru prestatori</h3>
+            <div className="how-sub">De la înscriere la primul client nou</div>
+            <div className="how-step">
+              <div className="how-num">1</div>
+              <div>
+                <div className="how-step-title">Îți creezi profilul</div>
+                <div className="how-step-text">Adaugi serviciile, prețurile și orașul în care lucrezi.</div>
+              </div>
+            </div>
+            <div className="how-step">
+              <div className="how-num">2</div>
+              <div>
+                <div className="how-step-title">Apari clienților din zonă</div>
+                <div className="how-step-text">Ești vizibil automat clienților care caută în orașul tău.</div>
+              </div>
+            </div>
+            <div className="how-step">
+              <div className="how-num">3</div>
+              <div>
+                <div className="how-step-title">Accepți programări</div>
+                <div className="how-step-text">Gestionezi totul dintr-un calendar simplu — acceptă sau respinge într-un click.</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
+
+      {!session && (
+        <div className="cta-band">
+          <h2>Ești meseriaș? Găsește clienți noi, aproape de tine.</h2>
+          <p>Fără comisioane ascunse, fără telefoane pierdute. Clienții te găsesc după oraș și meserie, programează direct, tu confirmi dintr-un calendar simplu.</p>
+          <div className="cta-band-stats">
+            <div><span className="stat-num">412</span><span className="stat-label">Prestatori activi</span></div>
+            <div><span className="stat-num">1.840+</span><span className="stat-label">Programări/lună</span></div>
+            <div><span className="stat-num">4.8★</span><span className="stat-label">Rating mediu</span></div>
+          </div>
+          <a href="/inregistrare" className="btn btn-orange btn-lg">Creează profil de prestator</a>
+        </div>
+      )}
 
       <footer>
         <b>FixEasy</b> — date reale, salvate în PostgreSQL.
