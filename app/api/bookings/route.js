@@ -46,6 +46,7 @@ export async function GET(request) {
 
   const bookings = result.rows.map((b) => ({
     id: "b" + b.id,
+    rawId: b.id,
     providerName: b.provider_name,
     serviceName: b.service_name,
     clientName: b.client_name,

@@ -4,6 +4,18 @@ import { useState } from "react";
 
 const CATEGORIES = ["Toți", "Instalator", "Electrician", "Mecanic auto"];
 const SLOTS = ["09:00", "10:30", "11:00", "13:00", "14:30", "16:00"];
+const WEEKDAYS_RO = ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "Sâm"];
+
+function nextDays(count) {
+  const days = [];
+  for (let i = 1; i <= count; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const iso = d.toISOString().split("T")[0];
+    days.push({ iso, label: WEEKDAYS_RO[d.getDay()], dayNum: d.getDate() });
+  }
+  return days;
+}
 
 export default function Marketplace({ initialProviders, isLoggedIn, userRole }) {
   const [category, setCategory] = useState("Toți");
@@ -77,7 +89,9 @@ export default function Marketplace({ initialProviders, isLoggedIn, userRole }) 
 }
 
 function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
+  const days = nextDays(7);
   const [serviceId, setServiceId] = useState(provider.services[0]?.id || "");
+  const [date, setDate] = useState(days[0].iso);
   const [slot, setSlot] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -95,7 +109,7 @@ function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
         body: JSON.stringify({
           providerId: provider.id,
           serviceId,
-          date: "mâine",
+          date,
           time: slot,
         }),
       });
@@ -165,7 +179,7 @@ function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
                 <div>FIȘĂ NR. <b>#{confirmed.id}</b></div>
                 <div>Prestator: <b>{confirmed.providerName}</b></div>
                 <div>Serviciu: <b>{confirmed.serviceName}</b></div>
-                <div>Interval: <b>{confirmed.date}, {confirmed.time}</b></div>
+                <div>Interval: <b>{formatDate(confirmed.date)}, {confirmed.time}</b></div>
                 <div>Status: <b style={{ color: "var(--orange-dark)" }}>În așteptare confirmare</b></div>
               </div>
             </div>
@@ -178,7 +192,21 @@ function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
                 ))}
               </select>
 
-              <span className="field-label">Interval liber, mâine</span>
+              <span className="field-label">Alege ziua</span>
+              <div className="slot-grid" style={{ gridTemplateColumns: "repeat(7,1fr)", marginBottom: 14 }}>
+                {days.map((d) => (
+                  <div
+                    key={d.iso}
+                    className={"slot" + (date === d.iso ? " selected" : "")}
+                    style={{ padding: "8px 4px", fontSize: 11 }}
+                    onClick={() => setDate(d.iso)}
+                  >
+                    {d.label}<br />{d.dayNum}
+                  </div>
+                ))}
+              </div>
+
+              <span className="field-label">Interval liber, {formatDate(date)}</span>
               <div className="slot-grid">
                 {SLOTS.map((t) => (
                   <div
@@ -202,4 +230,10 @@ function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
       </div>
     </div>
   );
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("ro-RO", { weekday: "short", day: "numeric", month: "short" });
 }

@@ -1,0 +1,405 @@
+"use client";
+
+import { useState, useMemo } from "react";
+
+const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
+const MONTHS_RO = ["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
+
+function isoOf(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function startOfWeek(d) {
+  const day = (d.getDay() + 6) % 7; // Luni = 0
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - day);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+function monthGrid(year, month) {
+  const first = new Date(year, month, 1);
+  const startWeekday = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
+}
+
+export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices }) {
+  const [tab, setTab] = useState("calendar");
+  const [bookings, setBookings] = useState(initialBookings);
+
+  const pending = bookings.filter((b) => b.status === "pending").length;
+  const confirmed = bookings.filter((b) => b.status === "confirmed").length;
+
+  async function updateStatus(rawId, status) {
+    const res = await fetch(`/api/bookings/${rawId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setBookings((prev) => prev.map((b) => (b.rawId === rawId ? { ...b, status } : b)));
+    }
+  }
+
+  return (
+    <section>
+      <div className="section-head">
+        <span className="eyebrow" style={{ background: "rgba(44,74,94,.1)", color: "var(--steel)" }}>Dashboard prestator</span>
+        <h2>Bun venit, {providerName}</h2>
+        <p>Calendar, programări și profil de business — totul salvat real.</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px,1fr))", gap: 12, marginBottom: 20, maxWidth: 1000, margin: "0 auto 20px" }}>
+        <Stat label="Total programări" value={bookings.length} />
+        <Stat label="În așteptare" value={pending} />
+        <Stat label="Confirmate" value={confirmed} />
+      </div>
+
+      <div className="cat-row" style={{ maxWidth: 1000, margin: "0 auto 20px" }}>
+        <button className={"cat-btn" + (tab === "calendar" ? " active" : "")} onClick={() => setTab("calendar")}>Calendar</button>
+        <button className={"cat-btn" + (tab === "cont" ? " active" : "")} onClick={() => setTab("cont")}>Servicii &amp; Profil</button>
+      </div>
+
+      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        {tab === "calendar" ? (
+          <CalendarPanel bookings={bookings} onUpdateStatus={updateStatus} />
+        ) : (
+          <AccountPanel initialProfile={initialProfile} initialServices={initialServices} />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div style={{ background: "#0F3F60", borderRadius: 8, padding: 14, color: "var(--paper)" }}>
+      <b style={{ fontSize: 22, display: "block", fontFamily: "'Space Grotesk',sans-serif" }}>{value}</b>
+      <span style={{ fontSize: 11, color: "rgba(243,248,251,.6)", textTransform: "uppercase", letterSpacing: ".04em", fontFamily: "'IBM Plex Mono',monospace" }}>{label}</span>
+    </div>
+  );
+}
+
+/* ---------------- CALENDAR ---------------- */
+
+function CalendarPanel({ bookings, onUpdateStatus }) {
+  const [view, setView] = useState("luna"); // luna | saptamana | zi
+  const [cursor, setCursor] = useState(new Date());
+
+  const byDate = useMemo(() => {
+    const map = {};
+    for (const b of bookings) {
+      (map[b.date] ||= []).push(b);
+    }
+    return map;
+  }, [bookings]);
+
+  function shift(delta) {
+    const d = new Date(cursor);
+    if (view === "luna") d.setMonth(d.getMonth() + delta);
+    else if (view === "saptamana") d.setDate(d.getDate() + delta * 7);
+    else d.setDate(d.getDate() + delta);
+    setCursor(d);
+  }
+
+  const title =
+    view === "luna"
+      ? `${MONTHS_RO[cursor.getMonth()]} ${cursor.getFullYear()}`
+      : view === "saptamana"
+      ? `Săptămâna ${isoOf(startOfWeek(cursor))}`
+      : cursor.toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+
+  return (
+    <div className="dash-panel">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: "1px solid #1C4F73", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(-1)}>‹</button>
+          <b style={{ color: "var(--paper)", fontFamily: "'Space Grotesk',sans-serif", fontSize: 15 }}>{title}</b>
+          <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(1)}>›</button>
+          <button className="btn btn-outline" style={{ color: "var(--paper)", borderColor: "rgba(243,248,251,.3)", padding: "6px 12px" }} onClick={() => setCursor(new Date())}>Azi</button>
+        </div>
+        <div className="cat-row" style={{ marginBottom: 0 }}>
+          {["zi", "saptamana", "luna"].map((v) => (
+            <button key={v} className={"cat-btn" + (view === v ? " active" : "")} onClick={() => setView(v)}>
+              {v === "zi" ? "Zi" : v === "saptamana" ? "Săptămână" : "Lună"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="dash-body">
+        {view === "luna" && <MonthView cursor={cursor} byDate={byDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
+        {view === "saptamana" && <WeekView cursor={cursor} byDate={byDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
+        {view === "zi" && <DayView cursor={cursor} bookings={byDate[isoOf(cursor)] || []} onUpdateStatus={onUpdateStatus} />}
+      </div>
+    </div>
+  );
+}
+
+function MonthView({ cursor, byDate, onPickDay }) {
+  const cells = monthGrid(cursor.getFullYear(), cursor.getMonth());
+  const todayIso = isoOf(new Date());
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginBottom: 6 }}>
+        {WEEKDAYS_SHORT.map((w) => (
+          <div key={w} style={{ textAlign: "center", fontSize: 11, color: "rgba(243,248,251,.5)", fontFamily: "'IBM Plex Mono',monospace" }}>{w}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const iso = isoOf(d);
+          const items = byDate[iso] || [];
+          const isToday = iso === todayIso;
+          return (
+            <div
+              key={i}
+              onClick={() => onPickDay(d)}
+              style={{
+                minHeight: 68, borderRadius: 8, padding: 6, cursor: "pointer",
+                background: isToday ? "rgba(79,168,216,.15)" : "#0B3552",
+                border: isToday ? "1.5px solid var(--orange)" : "1px solid #1C4F73",
+              }}
+            >
+              <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "'IBM Plex Mono',monospace", marginBottom: 4 }}>{d.getDate()}</div>
+              {items.slice(0, 2).map((b) => (
+                <div key={b.id} className={"status " + b.status} style={{ fontSize: 9, marginBottom: 2, display: "block", textAlign: "left", padding: "2px 5px" }}>
+                  {b.time}
+                </div>
+              ))}
+              {items.length > 2 && (
+                <div style={{ fontSize: 9.5, color: "rgba(243,248,251,.5)" }}>+{items.length - 2} mai multe</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WeekView({ cursor, byDate, onPickDay }) {
+  const monday = startOfWeek(cursor);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 8 }}>
+      {days.map((d) => {
+        const iso = isoOf(d);
+        const items = byDate[iso] || [];
+        return (
+          <div key={iso} onClick={() => onPickDay(d)} style={{ cursor: "pointer", background: "#0B3552", border: "1px solid #1C4F73", borderRadius: 8, padding: 8, minHeight: 140 }}>
+            <div style={{ fontSize: 11, color: "rgba(243,248,251,.6)", marginBottom: 6, fontFamily: "'IBM Plex Mono',monospace" }}>
+              {WEEKDAYS_SHORT[(d.getDay() + 6) % 7]} {d.getDate()}
+            </div>
+            {items.map((b) => (
+              <div key={b.id} className={"status " + b.status} style={{ display: "block", marginBottom: 4, fontSize: 10, padding: "3px 6px" }}>
+                {b.time} · {b.clientName.split(" ")[0]}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DayView({ cursor, bookings, onUpdateStatus }) {
+  const sorted = [...bookings].sort((a, b) => a.time.localeCompare(b.time));
+  if (sorted.length === 0) {
+    return <p style={{ color: "rgba(243,248,251,.6)", textAlign: "center", padding: "24px 0" }}>Nicio programare în această zi.</p>;
+  }
+  return (
+    <div>
+      {sorted.map((b) => (
+        <div className="dash-row" key={b.id}>
+          <div className="who">
+            <div className="mini-avatar">{b.clientName.slice(0, 2).toUpperCase()}</div>
+            <div>
+              {b.clientName} — {b.serviceName}
+              <br />
+              <span style={{ opacity: 0.5, fontSize: 11.5 }}>{b.time} · #{b.id}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className={"status " + b.status}>
+              {b.status === "pending" ? "În așteptare" : b.status === "confirmed" ? "Confirmată" : b.status}
+            </span>
+            {b.status === "pending" && (
+              <>
+                <button className="btn btn-steel" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onUpdateStatus(b.rawId, "confirmed")}>Acceptă</button>
+                <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "var(--paper)", borderColor: "rgba(243,248,251,.3)" }} onClick={() => onUpdateStatus(b.rawId, "cancelled")}>Respinge</button>
+              </>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- ACCOUNT (profile + services) ---------------- */
+
+function AccountPanel({ initialProfile, initialServices }) {
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+      <ProfileForm initialProfile={initialProfile} />
+      <ServicesManager initialServices={initialServices} />
+    </div>
+  );
+}
+
+function ProfileForm({ initialProfile }) {
+  const [businessName, setBusinessName] = useState(initialProfile?.business_name || "");
+  const [category, setCategory] = useState(initialProfile?.category || "Instalator");
+  const [city, setCity] = useState(initialProfile?.city || "");
+  const [tags, setTags] = useState((initialProfile?.tags || []).join(", "));
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function save(e) {
+    e.preventDefault();
+    setSaving(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/provider/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessName, category, city, tags }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la salvare.");
+      setMessage("Profil salvat.");
+    } catch (err) {
+      setMessage(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={save} className="prov-card" style={{ padding: 20 }}>
+      <h3 style={{ fontSize: 16, marginBottom: 14 }}>Profil de business</h3>
+      <span className="field-label">Nume business</span>
+      <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
+      <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <option>Instalator</option>
+        <option>Electrician</option>
+        <option>Mecanic auto</option>
+      </select>
+      <span className="field-label" style={{ marginTop: 12 }}>Oraș</span>
+      <input value={city} onChange={(e) => setCity(e.target.value)} required />
+      <span className="field-label" style={{ marginTop: 12 }}>Etichete (separate prin virgulă)</span>
+      <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Ex: Urgențe 24/7, Autorizat ANRE" />
+      {message && <div style={{ marginTop: 10, fontSize: 13, color: message === "Profil salvat." ? "var(--green)" : "#B3261E" }}>{message}</div>}
+      <button className="btn btn-orange" style={{ marginTop: 14, padding: "10px 20px" }} disabled={saving}>
+        {saving ? "Se salvează…" : "Salvează profilul"}
+      </button>
+    </form>
+  );
+}
+
+function ServicesManager({ initialServices }) {
+  const [services, setServices] = useState(initialServices);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState({ name: "", price: "", duration: "" });
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState("");
+
+  function startEdit(s) {
+    setEditingId(s.id);
+    setForm({ name: s.name, price: s.price, duration: s.duration_minutes });
+  }
+
+  async function saveEdit(id) {
+    const res = await fetch(`/api/provider/services/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: form.name, price: Number(form.price), duration: Number(form.duration) }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setServices((prev) => prev.map((s) => (s.id === id ? data.service : s)));
+      setEditingId(null);
+    } else {
+      setError(data.error);
+    }
+  }
+
+  async function deleteService(id) {
+    const res = await fetch(`/api/provider/services/${id}`, { method: "DELETE" });
+    if (res.ok) setServices((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function addService(e) {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await fetch("/api/provider/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.name, price: Number(form.price), duration: Number(form.duration) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setServices((prev) => [...prev, data.service]);
+      setForm({ name: "", price: "", duration: "" });
+      setAdding(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  return (
+    <div className="prov-card" style={{ padding: 20 }}>
+      <h3 style={{ fontSize: 16, marginBottom: 14 }}>Servicii oferite</h3>
+
+      {services.map((s) => (
+        <div key={s.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
+          {editingId === s.id ? (
+            <div style={{ display: "flex", gap: 8, flex: 1, flexWrap: "wrap" }}>
+              <input style={{ flex: 2 }} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <input style={{ flex: 1 }} type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Preț" />
+              <input style={{ flex: 1 }} type="number" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="Durată (min)" />
+              <button className="btn btn-orange" style={{ padding: "8px 12px" }} onClick={() => saveEdit(s.id)}>Salvează</button>
+              <button className="btn btn-outline" style={{ padding: "8px 12px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setEditingId(null)}>Anulează</button>
+            </div>
+          ) : (
+            <>
+              <div>{s.name} <span className="mono" style={{ color: "var(--slate)", fontSize: 12 }}>— {s.price} lei · {s.duration_minutes} min</span></div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => startEdit(s)}>Editează</button>
+                <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "#B3261E", borderColor: "#F3C6C2" }} onClick={() => deleteService(s.id)}>Șterge</button>
+              </div>
+            </>
+          )}
+        </div>
+      ))}
+
+      {adding ? (
+        <form onSubmit={addService} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+          <input style={{ flex: 2 }} placeholder="Nume serviciu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          <input style={{ flex: 1 }} type="number" placeholder="Preț (lei)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+          <input style={{ flex: 1 }} type="number" placeholder="Durată (min)" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} required />
+          <button className="btn btn-orange" style={{ padding: "8px 14px" }}>Adaugă</button>
+          <button type="button" className="btn btn-outline" style={{ padding: "8px 14px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setAdding(false)}>Anulează</button>
+        </form>
+      ) : (
+        <button className="btn btn-steel" style={{ marginTop: 14, padding: "10px 18px" }} onClick={() => setAdding(true)}>+ Adaugă serviciu</button>
+      )}
+
+      {error && <div className="error-msg" style={{ marginTop: 10 }}>{error}</div>}
+    </div>
+  );
+}
