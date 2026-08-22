@@ -1,6 +1,8 @@
 import "./globals.css";
+import { Suspense } from "react";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
 import InstallPrompt from "./InstallPrompt";
+import GoogleAnalytics from "./GoogleAnalytics";
 
 export const metadata = {
   title: "FixEasy — meseriași verificați, programare rapidă",
@@ -19,6 +21,9 @@ export const metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png" }],
   },
   formatDetection: { telephone: false },
+  ...(process.env.GOOGLE_SITE_VERIFICATION && {
+    verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
+  }),
 };
 
 export const viewport = {
@@ -43,6 +48,9 @@ export default function RootLayout({ children }) {
         {children}
         <ServiceWorkerRegister />
         <InstallPrompt />
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
       </body>
     </html>
   );

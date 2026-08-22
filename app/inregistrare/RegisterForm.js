@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackEvent } from "../GoogleAnalytics";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function RegisterForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la înregistrare.");
+      trackEvent("sign_up", { method: role });
       router.push(role === "provider" ? "/dashboard" : "/");
       router.refresh();
     } catch (err) {

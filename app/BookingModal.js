@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { nowInBucharest } from "../lib/date";
+import { trackEvent } from "./GoogleAnalytics";
 
 const SLOTS = ["09:00", "10:30", "11:00", "13:00", "14:30", "16:00"];
 const WEEKDAYS_RO = ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "Sâm"];
@@ -45,6 +46,12 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la salvarea programării");
       setConfirmed(data.booking);
+      trackEvent("booking_confirmed", {
+        provider_id: provider.id,
+        provider_name: provider.name,
+        value: data.booking?.price || 0,
+        currency: "RON",
+      });
     } catch (e) {
       setError(e.message);
     } finally {

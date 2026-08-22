@@ -251,6 +251,33 @@ function AccountPanel({ initialProfile, initialServices }) {
     <div style={{ display: "grid", gap: 20 }}>
       <ProfileForm initialProfile={initialProfile} />
       <ServicesManager initialServices={initialServices} />
+      <GoogleVisibilityCard initialProfile={initialProfile} />
+    </div>
+  );
+}
+
+function GoogleVisibilityCard({ initialProfile }) {
+  const businessName = initialProfile?.business_name || "afacerea ta";
+  const city = initialProfile?.city && initialProfile.city !== "Necompletat" ? initialProfile.city : "";
+  const gbpUrl = "https://business.google.com/create";
+  const searchQuery = encodeURIComponent(`${businessName} ${city}`.trim());
+
+  return (
+    <div className="panel-card">
+      <h3 style={{ fontSize: 16, marginBottom: 6 }}>📍 Apari și pe Google</h3>
+      <p style={{ fontSize: 13.5, color: "var(--slate)", marginBottom: 16 }}>
+        Profilul tău FixEasy e deja pregătit pentru Google Search (pagină indexabilă cu recenzii și prețuri).
+        Pentru și mai multă vizibilitate — inclusiv pe Google Maps — creează-ți gratuit un <b>Google Business Profile</b> și
+        pune link-ul către profilul tău FixEasy ca website.
+      </p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <a href={gbpUrl} target="_blank" rel="noreferrer" className="btn btn-orange">
+          Creează Google Business Profile
+        </a>
+        <a href={`https://www.google.com/search?q=${searchQuery}`} target="_blank" rel="noreferrer" className="btn btn-outline">
+          Vezi cum apari acum pe Google
+        </a>
+      </div>
     </div>
   );
 }

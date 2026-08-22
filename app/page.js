@@ -54,8 +54,21 @@ async function getTopCategoryCityLinks() {
 export default async function HomePage() {
   const [providers, session, topLinks] = await Promise.all([getProviders(), getSession(), getTopCategoryCityLinks()]);
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "FixEasy",
+    url: "https://fixeasy-app-pmcustoms.vercel.app",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://fixeasy-app-pmcustoms.vercel.app/instalatori/{search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       <SiteHeader session={session} links={[{ href: "#marketplace", label: "Meseriași" }]} />
 
       <HomeClient
