@@ -5,11 +5,11 @@ import { useState } from "react";
 const CATEGORIES = ["Toți", "Instalator", "Electrician", "Mecanic auto"];
 const SLOTS = ["09:00", "10:30", "11:00", "13:00", "14:30", "16:00"];
 
-export default function Marketplace({ initialProviders }) {
+export default function Marketplace({ initialProviders, isLoggedIn, userRole }) {
   const [category, setCategory] = useState("Toți");
   const [providers, setProviders] = useState(initialProviders);
   const [loading, setLoading] = useState(false);
-  const [bookingFor, setBookingFor] = useState(null); // provider object or null
+  const [bookingFor, setBookingFor] = useState(null);
 
   async function selectCategory(cat) {
     setCategory(cat);
@@ -42,7 +42,7 @@ export default function Marketplace({ initialProviders }) {
                 <div className="avatar">{p.init}</div>
                 <div>
                   <div className="prov-name">
-                    {p.name} <span className="badge-verified">VERIFICAT</span>
+                    {p.name} {p.tags?.length > 0 && <span className="badge-verified">VERIFICAT</span>}
                   </div>
                   <div className="prov-meta">{p.cat} · {p.city}</div>
                 </div>
@@ -65,25 +65,27 @@ export default function Marketplace({ initialProviders }) {
       </div>
 
       {bookingFor && (
-        <BookingModal provider={bookingFor} onClose={() => setBookingFor(null)} />
+        <BookingModal
+          provider={bookingFor}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+          onClose={() => setBookingFor(null)}
+        />
       )}
     </>
   );
 }
 
-function BookingModal({ provider, onClose }) {
+function BookingModal({ provider, isLoggedIn, userRole, onClose }) {
   const [serviceId, setServiceId] = useState(provider.services[0]?.id || "");
   const [slot, setSlot] = useState(null);
-  const [clientName, setClientName] = useState("");
-  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [confirmed, setConfirmed] = useState(null); // booking returned by API
+  const [confirmed, setConfirmed] = useState(null);
 
   async function submit() {
     setError("");
     if (!slot) { setError("Alege un interval orar."); return; }
-    if (!clientName.trim() || !phone.trim()) { setError("Completează numele și telefonul."); return; }
 
     setSubmitting(true);
     try {
@@ -93,8 +95,6 @@ function BookingModal({ provider, onClose }) {
         body: JSON.stringify({
           providerId: provider.id,
           serviceId,
-          clientName,
-          phone,
           date: "mâine",
           time: slot,
         }),
@@ -107,6 +107,43 @@ function BookingModal({ provider, onClose }) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // Neautentificat -> cere login/cont de client, in loc de formular.
+  if (!isLoggedIn) {
+    return (
+      <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="modal">
+          <div className="modal-head">
+            <h3>Programează — {provider.name}</h3>
+            <button className="close-x" onClick={onClose}>✕</button>
+          </div>
+          <div className="modal-body" style={{ textAlign: "center" }}>
+            <p style={{ color: "var(--slate)", marginBottom: 16 }}>
+              Trebuie să fii autentificat cu un cont de client ca să faci o programare.
+            </p>
+            <a href="/login" className="btn btn-orange" style={{ marginRight: 10 }}>Autentificare</a>
+            <a href="/inregistrare" className="btn btn-steel">Creează cont</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole === "provider") {
+    return (
+      <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="modal">
+          <div className="modal-head">
+            <h3>Programează — {provider.name}</h3>
+            <button className="close-x" onClick={onClose}>✕</button>
+          </div>
+          <div className="modal-body" style={{ textAlign: "center", color: "var(--slate)" }}>
+            Ești autentificat ca prestator. Doar conturile de client pot face programări.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -122,18 +159,15 @@ function BookingModal({ provider, onClose }) {
               <div className="ok">✓</div>
               <h3 style={{ fontSize: 17, marginBottom: 6 }}>Programare salvată!</h3>
               <p style={{ color: "var(--slate)", fontSize: 13.5 }}>
-                Datele au fost trimise real către server — vezi programarea în dashboard-ul prestatorului.
+                Legată de contul tău — o vezi oricând în istoricul programărilor.
               </p>
               <div className="stub">
                 <div>FIȘĂ NR. <b>#{confirmed.id}</b></div>
                 <div>Prestator: <b>{confirmed.providerName}</b></div>
                 <div>Serviciu: <b>{confirmed.serviceName}</b></div>
                 <div>Interval: <b>{confirmed.date}, {confirmed.time}</b></div>
-                <div>Status: <b style={{ color: "var(--orange-dark)" }}>{confirmed.status === "pending" ? "În așteptare confirmare" : confirmed.status}</b></div>
+                <div>Status: <b style={{ color: "var(--orange-dark)" }}>În așteptare confirmare</b></div>
               </div>
-              <a href="/dashboard" className="btn btn-steel" style={{ display: "inline-block", marginTop: 16 }}>
-                Vezi în dashboard →
-              </a>
             </div>
           ) : (
             <>
@@ -156,12 +190,6 @@ function BookingModal({ provider, onClose }) {
                   </div>
                 ))}
               </div>
-
-              <span className="field-label">Numele tău</span>
-              <input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Ex: Andrei Popescu" />
-
-              <span className="field-label">Telefon</span>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" />
 
               {error && <div className="error-msg">{error}</div>}
 
