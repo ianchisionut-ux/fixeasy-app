@@ -6,6 +6,11 @@ import DashboardApp from "./DashboardApp";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Dashboard prestator | FixEasy",
+  robots: { index: false, follow: false },
+};
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");

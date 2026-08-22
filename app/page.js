@@ -2,6 +2,8 @@ import { query } from "../lib/db";
 import { getSession } from "../lib/auth";
 import HomeClient from "./HomeClient";
 import SiteHeader from "./SiteHeader";
+import { CATEGORIES_SEO, citySlug } from "../lib/seo";
+import { displayCity } from "../lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +44,15 @@ async function getProviders() {
   }));
 }
 
+async function getTopCategoryCityLinks() {
+  const result = await query(
+    `SELECT category, city, COUNT(*) AS count FROM provider_profiles GROUP BY category, city ORDER BY count DESC LIMIT 8`
+  );
+  return result.rows;
+}
+
 export default async function HomePage() {
-  const [providers, session] = await Promise.all([getProviders(), getSession()]);
+  const [providers, session, topLinks] = await Promise.all([getProviders(), getSession(), getTopCategoryCityLinks()]);
 
   return (
     <>
@@ -130,6 +139,19 @@ export default async function HomePage() {
       )}
 
       <footer>
+        {topLinks.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, marginBottom: 20, fontSize: 12.5 }}>
+            {topLinks.map((l) => {
+              const cat = CATEGORIES_SEO.find((c) => c.category === l.category);
+              if (!cat) return null;
+              return (
+                <a key={`${l.category}-${l.city}`} href={`/${cat.slug}/${citySlug(l.city)}`} style={{ color: "rgba(243,248,251,.55)" }}>
+                  {cat.label} {displayCity(l.city)}
+                </a>
+              );
+            })}
+          </div>
+        )}
         <b>FixEasy</b> — date reale, salvate în PostgreSQL.
       </footer>
     </>

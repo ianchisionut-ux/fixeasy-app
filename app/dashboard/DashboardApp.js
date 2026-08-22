@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
+import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
 const MONTHS_RO = ["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
@@ -282,9 +283,20 @@ function ProfileForm({ initialProfile }) {
     }
   }
 
+  const isPublished = initialProfile?.category && initialProfile.category !== "Necompletat" && initialProfile?.city && initialProfile.city !== "Necompletat";
+  const publicUrl = isPublished
+    ? `/${CATEGORIES_SEO.find((c) => c.category === initialProfile.category)?.slug}/${citySlug(initialProfile.city)}/${providerSlug(initialProfile.business_name, initialProfile.id)}`
+    : null;
+
   return (
     <form onSubmit={save} className="panel-card">
-      <h3 style={{ fontSize: 16, marginBottom: 14 }}>Profil de business</h3>
+      <h3 style={{ fontSize: 16, marginBottom: 4 }}>Profil de business</h3>
+      {publicUrl && (
+        <a href={publicUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--steel)", fontWeight: 700, display: "inline-block", marginBottom: 14 }}>
+          🔗 Vezi profilul tău public →
+        </a>
+      )}
+      {!publicUrl && <div style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 14 }}>Completează categoria și orașul ca profilul tău să apară public și în Google.</div>}
       <span className="field-label">Nume business</span>
       <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
       <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
