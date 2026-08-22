@@ -35,7 +35,7 @@ header{
 .nav{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; max-width:1180px; margin:0 auto; flex-wrap:wrap; gap:10px; position:relative;}
 .logo{display:flex; align-items:center;}
 .logo img{height:42px; width:auto; display:block;}
-.nav-links{display:flex; gap:26px; font-size:14px; font-weight:600;}
+.nav-links{display:flex; gap:26px; font-size:14px; font-weight:600; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
 .nav-links a{opacity:.7; color:var(--graphite); transition:opacity .15s var(--ease);}
 .nav-links a:hover{opacity:1;}
 .nav-cta{display:flex; align-items:center; gap:10px;}

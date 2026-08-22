@@ -99,7 +99,7 @@ export default async function CategoryCityPage({ params }) {
       </section>
 
       <footer>
-        <b>FixEasy</b> — marketplace pentru meseriași verificați.
+        <b>FixEasy</b> — marketplace pentru profesioniști verificați.
       </footer>
     </>
   );

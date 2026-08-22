@@ -5,7 +5,7 @@ import InstallPrompt from "./InstallPrompt";
 import GoogleAnalytics from "./GoogleAnalytics";
 
 export const metadata = {
-  title: "FixEasy — meseriași verificați, programare rapidă",
+  title: "FixEasy — profesioniști verificați, programare rapidă",
   description: "Marketplace pentru instalatori, electricieni și mecanici auto, cu programări online.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

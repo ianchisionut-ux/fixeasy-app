@@ -90,20 +90,20 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
     <>
       <div className="hero">
         <span className="eyebrow">
-          ● {providers.length} meseriași verificați {cityDisplay ? `în ${cityDisplay}` : "activi azi"}
+          ● {providers.length} profesioniști verificați {cityDisplay ? `în ${cityDisplay}` : "activi azi"}
         </span>
-        <h1>Găsești meseriașul potrivit.<br />Programezi în 60 de secunde.</h1>
+        <h1>Găsești profesionistul potrivit.<br />Programezi în 60 de secunde.</h1>
         <p>Instalatori, electricieni și mecanici auto verificați, aproape de tine — programarea se salvează live, cu status urmărit în dashboard.</p>
 
         <div className="hero-search">
           <button className="city-btn" onClick={() => setShowCityModal(true)} disabled={cityStatus === "detecting"}>
             📍 {cityLabel} <span style={{ opacity: 0.6 }}>▾</span>
           </button>
-          <a href="#marketplace" className="btn btn-orange btn-lg">Caută meseriași</a>
+          <a href="#marketplace" className="btn btn-orange btn-lg">Caută profesioniști</a>
         </div>
 
         {!isLoggedIn && (
-          <a href="/inregistrare" className="hero-provider-link">Ești meseriaș? Găsește clienți noi în zona ta →</a>
+          <a href="/inregistrare" className="hero-provider-link">Ești profesionist? Găsește clienți noi în zona ta →</a>
         )}
 
         <div className="hero-stats">

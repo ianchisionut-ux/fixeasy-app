@@ -1,6 +1,6 @@
 export default function manifest() {
   return {
-    name: "FixEasy — meseriași verificați, programare rapidă",
+    name: "FixEasy — profesioniști verificați, programare rapidă",
     short_name: "FixEasy",
     description: "Marketplace pentru instalatori, electricieni și mecanici auto, cu programări online.",
     start_url: "/",

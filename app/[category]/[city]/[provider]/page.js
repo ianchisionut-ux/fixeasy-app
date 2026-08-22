@@ -137,7 +137,7 @@ export default async function ProviderPage({ params }) {
       </section>
 
       <footer>
-        <b>FixEasy</b> — marketplace pentru meseriași verificați.
+        <b>FixEasy</b> — marketplace pentru profesioniști verificați.
       </footer>
     </>
   );

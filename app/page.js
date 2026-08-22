@@ -69,7 +69,7 @@ export default async function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
-      <SiteHeader session={session} links={[{ href: "#marketplace", label: "Meseriași" }]} />
+      <SiteHeader session={session} links={[{ href: "#marketplace", label: "Profesioniști" }]} />
 
       <HomeClient
         initialProviders={providers}
@@ -81,7 +81,7 @@ export default async function HomePage() {
         <div className="section-head">
           <span className="eyebrow" style={{ background: "rgba(44,74,94,.1)", color: "var(--steel)" }}>Proces</span>
           <h2>Cum funcționează</h2>
-          <p>Pași simpli, indiferent dacă cauți un meseriaș sau vrei mai mulți clienți.</p>
+          <p>Pași simpli, indiferent dacă cauți un profesionist sau vrei mai mulți clienți.</p>
         </div>
         <div className="how-split">
           <div className="how-col client">
@@ -140,7 +140,7 @@ export default async function HomePage() {
 
       {!session && (
         <div className="cta-band">
-          <h2>Ești meseriaș? Găsește clienți noi, aproape de tine.</h2>
+          <h2>Ești profesionist? Găsește clienți noi, aproape de tine.</h2>
           <p>Fără comisioane ascunse, fără telefoane pierdute. Clienții te găsesc după oraș și meserie, programează direct, tu confirmi dintr-un calendar simplu.</p>
           <div className="cta-band-stats">
             <div><span className="stat-num">412</span><span className="stat-label">Prestatori activi</span></div>
