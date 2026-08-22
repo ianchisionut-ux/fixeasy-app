@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SiteHeader from "../SiteHeader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,17 +34,13 @@ export default function LoginPage() {
 
   return (
     <>
-      <header>
-        <div className="nav">
-          <a href="/" className="logo"><img src="/logo.png" alt="FixEasy.ro" /></a>
-        </div>
-      </header>
+      <SiteHeader session={null} />
       <section style={{ maxWidth: 420, margin: "60px auto" }}>
         <div className="section-head">
           <h2>Autentificare</h2>
           <p>Intră în contul tău FixEasy.</p>
         </div>
-        <form onSubmit={submit} style={{ background: "var(--white)", border: "1.5px solid var(--line)", borderRadius: 12, padding: 24 }}>
+        <form onSubmit={submit} style={{ background: "var(--white)", border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: 28, boxShadow: "var(--shadow-md)" }}>
           <span className="field-label">Email</span>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="nume@exemplu.ro" />
           <span className="field-label" style={{ marginTop: 14 }}>Parolă</span>

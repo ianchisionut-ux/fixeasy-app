@@ -283,7 +283,7 @@ function ProfileForm({ initialProfile }) {
   }
 
   return (
-    <form onSubmit={save} className="prov-card" style={{ padding: 20 }}>
+    <form onSubmit={save} className="panel-card">
       <h3 style={{ fontSize: 16, marginBottom: 14 }}>Profil de business</h3>
       <span className="field-label">Nume business</span>
       <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
@@ -357,7 +357,7 @@ function ServicesManager({ initialServices }) {
   }
 
   return (
-    <div className="prov-card" style={{ padding: 20 }}>
+    <div className="panel-card">
       <h3 style={{ fontSize: 16, marginBottom: 14 }}>Servicii oferite</h3>
 
       {services.map((s) => (

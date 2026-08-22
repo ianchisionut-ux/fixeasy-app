@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { query } from "../../lib/db";
 import { getSession } from "../../lib/auth";
-import HeaderAuth from "../HeaderAuth";
+import SiteHeader from "../SiteHeader";
 import DashboardApp from "./DashboardApp";
 
 export const dynamic = "force-dynamic";
@@ -49,15 +49,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <header>
-        <div className="nav">
-          <a href="/" className="logo"><img src="/logo.png" alt="FixEasy.ro" /></a>
-          <nav className="nav-links">
-            <a href="/">← Înapoi la marketplace</a>
-          </nav>
-          <HeaderAuth session={session} />
-        </div>
-      </header>
+      <SiteHeader session={session} links={[{ href: "/", label: "← Marketplace" }]} />
 
       <DashboardApp
         providerName={session.name}

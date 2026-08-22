@@ -1,7 +1,7 @@
 import { query } from "../lib/db";
 import { getSession } from "../lib/auth";
 import Marketplace from "./Marketplace";
-import HeaderAuth from "./HeaderAuth";
+import SiteHeader from "./SiteHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -47,16 +47,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <header>
-        <div className="nav">
-          <a href="/" className="logo"><img src="/logo.png" alt="FixEasy.ro" /></a>
-          <nav className="nav-links">
-            <a href="#marketplace">Meseriași</a>
-            {session?.role === "provider" && <a href="/dashboard">Dashboard prestator</a>}
-          </nav>
-          <HeaderAuth session={session} />
-        </div>
-      </header>
+      <SiteHeader session={session} links={[{ href: "#marketplace", label: "Meseriași" }]} />
 
       <div className="hero">
         <span className="eyebrow">● {providers.length} meseriași verificați activi azi</span>

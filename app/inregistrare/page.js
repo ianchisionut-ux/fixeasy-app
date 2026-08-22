@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SiteHeader from "../SiteHeader";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,11 +37,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <header>
-        <div className="nav">
-          <a href="/" className="logo"><img src="/logo.png" alt="FixEasy.ro" /></a>
-        </div>
-      </header>
+      <SiteHeader session={null} />
       <section style={{ maxWidth: 440, margin: "60px auto" }}>
         <div className="section-head">
           <h2>Creează cont</h2>
@@ -50,7 +47,7 @@ export default function RegisterPage() {
           <button type="button" className={"cat-btn" + (role === "client" ? " active" : "")} onClick={() => setRole("client")}>Sunt client</button>
           <button type="button" className={"cat-btn" + (role === "provider" ? " active" : "")} onClick={() => setRole("provider")}>Sunt prestator</button>
         </div>
-        <form onSubmit={submit} style={{ background: "var(--white)", border: "1.5px solid var(--line)", borderRadius: 12, padding: 24 }}>
+        <form onSubmit={submit} style={{ background: "var(--white)", border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: 28, boxShadow: "var(--shadow-md)" }}>
           <span className="field-label">{role === "provider" ? "Nume business" : "Nume complet"}</span>
           <input value={name} onChange={(e) => setName(e.target.value)} required placeholder={role === "provider" ? "Ex: Ionescu Instalații" : "Ex: Andrei Popescu"} />
           <span className="field-label" style={{ marginTop: 14 }}>Email</span>
