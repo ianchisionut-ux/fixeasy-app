@@ -29,7 +29,7 @@ function monthGrid(year, month) {
   return cells;
 }
 
-export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices, initialGallery }) {
+export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices, initialGallery, initialSchedule, initialTimeOff }) {
   const [tab, setTab] = useState("calendar");
   const [bookings, setBookings] = useState(initialBookings);
 
@@ -67,12 +67,15 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
 
       <div className="cat-row" style={{ maxWidth: 1000, margin: "0 auto 20px" }}>
         <button className={"cat-btn" + (tab === "calendar" ? " active" : "")} onClick={() => setTab("calendar")}>Calendar</button>
+        <button className={"cat-btn" + (tab === "program" ? " active" : "")} onClick={() => setTab("program")}>Program de lucru</button>
         <button className={"cat-btn" + (tab === "cont" ? " active" : "")} onClick={() => setTab("cont")}>Servicii &amp; Profil</button>
       </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         {tab === "calendar" ? (
           <CalendarPanel bookings={bookings} onUpdateStatus={updateStatus} />
+        ) : tab === "program" ? (
+          <ScheduleManager initialSchedule={initialSchedule} initialTimeOff={initialTimeOff} />
         ) : (
           <AccountPanel initialProfile={initialProfile} initialServices={initialServices} initialGallery={initialGallery} />
         )}
@@ -636,4 +639,205 @@ function GalleryManager({ initialGallery }) {
       <span style={{ fontSize: 11.5, color: "var(--slate)", marginLeft: 10 }}>{images.length}/12 poze</span>
     </div>
   );
+}
+
+/* ---------------- PROGRAM DE LUCRU (schedule + blocari) ---------------- */
+
+const WEEKDAY_NAMES = ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"];
+
+function ScheduleManager({ initialSchedule, initialTimeOff }) {
+  const defaultDay = (weekday) => ({ weekday, isWorking: weekday !== 6, startTime: "09:00", endTime: "17:00" });
+  const initial = Array.from({ length: 7 }, (_, w) => {
+    const existing = initialSchedule?.find((d) => d.weekday === w);
+    return existing
+      ? { weekday: w, isWorking: existing.is_working, startTime: existing.start_time, endTime: existing.end_time }
+      : defaultDay(w);
+  });
+
+  const [schedule, setSchedule] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const [blocks, setBlocks] = useState(initialTimeOff || []);
+  const [adding, setAdding] = useState(false);
+  const [blockForm, setBlockForm] = useState({ date: "", allDay: true, startTime: "09:00", endTime: "17:00", reason: "" });
+  const [error, setError] = useState("");
+
+  function updateDay(weekday, patch) {
+    setSchedule((prev) => prev.map((d) => (d.weekday === weekday ? { ...d, ...patch } : d)));
+  }
+
+  async function saveSchedule() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/provider/availability", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la salvare.");
+      toast("Program salvat");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function addBlock(e) {
+    e.preventDefault();
+    setError("");
+    if (!blockForm.date) {
+      setError("Alege o dată.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/provider/timeoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: blockForm.date,
+          startTime: blockForm.allDay ? null : blockForm.startTime,
+          endTime: blockForm.allDay ? null : blockForm.endTime,
+          reason: blockForm.reason,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la adăugare.");
+      setBlocks((prev) => [...prev, data.block].sort((a, b) => a.date.localeCompare(b.date)));
+      setBlockForm({ date: "", allDay: true, startTime: "09:00", endTime: "17:00", reason: "" });
+      setAdding(false);
+      toast("Blocare adăugată");
+    } catch (err) {
+      setError(err.message);
+      toast(err.message, "error");
+    }
+  }
+
+  async function deleteBlock(id) {
+    const res = await fetch(`/api/provider/timeoff/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setBlocks((prev) => prev.filter((b) => b.id !== id));
+      toast("Blocare ștearsă");
+    } else {
+      toast("Eroare la ștergere", "error");
+    }
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+      <div className="panel-card">
+        <h3 style={{ fontSize: 16, marginBottom: 4 }}>Program săptămânal</h3>
+        <p style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 16 }}>
+          Alege zilele în care lucrezi și intervalul orar — clienții vor putea programa doar în aceste intervale.
+        </p>
+
+        {schedule.map((day) => (
+          <div key={day.weekday} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)", flexWrap: "wrap" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 140, cursor: "pointer", fontWeight: 700 }}>
+              <input
+                type="checkbox"
+                checked={day.isWorking}
+                onChange={(e) => updateDay(day.weekday, { isWorking: e.target.checked })}
+                style={{ width: "auto" }}
+              />
+              {WEEKDAY_NAMES[day.weekday]}
+            </label>
+            {day.isWorking ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="time"
+                  value={day.startTime}
+                  onChange={(e) => updateDay(day.weekday, { startTime: e.target.value })}
+                  style={{ width: 110 }}
+                />
+                <span style={{ color: "var(--slate)" }}>–</span>
+                <input
+                  type="time"
+                  value={day.endTime}
+                  onChange={(e) => updateDay(day.weekday, { endTime: e.target.value })}
+                  style={{ width: 110 }}
+                />
+              </div>
+            ) : (
+              <span style={{ fontSize: 12.5, color: "var(--slate)" }}>Liber</span>
+            )}
+          </div>
+        ))}
+
+        <button className="btn btn-orange" style={{ marginTop: 14, padding: "10px 20px" }} onClick={saveSchedule} disabled={saving}>
+          {saving ? "Se salvează…" : "Salvează programul"}
+        </button>
+      </div>
+
+      <div className="panel-card">
+        <h3 style={{ fontSize: 16, marginBottom: 4 }}>Blocări punctuale</h3>
+        <p style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 16 }}>
+          Blochează o zi întreagă sau doar un interval orar — concediu, urgențe personale, programări private etc.
+        </p>
+
+        {blocks.length === 0 && <p style={{ fontSize: 13, color: "var(--slate)", marginBottom: 14 }}>Nicio blocare programată.</p>}
+
+        {blocks.map((b) => (
+          <div key={b.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
+            <div>
+              <b>{formatBlockDate(b.date)}</b>{" "}
+              <span style={{ fontSize: 12.5, color: "var(--slate)" }}>
+                {b.startTime && b.endTime ? `${b.startTime} – ${b.endTime}` : "toată ziua"}
+                {b.reason ? ` · ${b.reason}` : ""}
+              </span>
+            </div>
+            <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "#B3261E", borderColor: "#F3C6C2" }} onClick={() => deleteBlock(b.id)}>
+              Șterge
+            </button>
+          </div>
+        ))}
+
+        {adding ? (
+          <form onSubmit={addBlock} style={{ marginTop: 14, display: "grid", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <input
+                type="date"
+                value={blockForm.date}
+                onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                style={{ flex: 1, minWidth: 160 }}
+                required
+              />
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>
+                <input
+                  type="checkbox"
+                  checked={blockForm.allDay}
+                  onChange={(e) => setBlockForm({ ...blockForm, allDay: e.target.checked })}
+                  style={{ width: "auto" }}
+                />
+                Toată ziua
+              </label>
+            </div>
+            {!blockForm.allDay && (
+              <div style={{ display: "flex", gap: 10 }}>
+                <input type="time" value={blockForm.startTime} onChange={(e) => setBlockForm({ ...blockForm, startTime: e.target.value })} style={{ flex: 1 }} />
+                <input type="time" value={blockForm.endTime} onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })} style={{ flex: 1 }} />
+              </div>
+            )}
+            <input
+              placeholder="Motiv (opțional) — ex: Concediu, programare privată"
+              value={blockForm.reason}
+              onChange={(e) => setBlockForm({ ...blockForm, reason: e.target.value })}
+            />
+            {error && <div className="error-msg">{error}</div>}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn btn-orange" style={{ padding: "8px 16px" }}>Adaugă blocarea</button>
+              <button type="button" className="btn btn-outline" style={{ padding: "8px 16px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setAdding(false)}>Anulează</button>
+            </div>
+          </form>
+        ) : (
+          <button className="btn btn-steel" style={{ marginTop: 14, padding: "10px 18px" }} onClick={() => setAdding(true)}>+ Adaugă blocare</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatBlockDate(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("ro-RO", { weekday: "short", day: "numeric", month: "long" });
 }

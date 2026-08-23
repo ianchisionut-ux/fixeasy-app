@@ -38,12 +38,14 @@ export default async function DashboardPage() {
   ]);
 
   const providerId = profileResult.rows[0]?.id;
-  const [servicesResult, galleryResult] = providerId
+  const [servicesResult, galleryResult, scheduleResult, timeOffResult] = providerId
     ? await Promise.all([
         query("SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id", [providerId]),
         query("SELECT id, image_data, caption FROM provider_gallery WHERE provider_id = $1 ORDER BY sort_order, id", [providerId]),
+        query("SELECT weekday, is_working, start_time, end_time FROM provider_availability WHERE provider_id = $1 ORDER BY weekday", [providerId]),
+        query("SELECT id, off_date, start_time, end_time, reason FROM provider_time_off WHERE provider_id = $1 AND off_date >= CURRENT_DATE ORDER BY off_date", [providerId]),
       ])
-    : [{ rows: [] }, { rows: [] }];
+    : [{ rows: [] }, { rows: [] }, { rows: [] }, { rows: [] }];
 
   const bookings = bookingsResult.rows.map((b) => ({
     id: "b" + b.id,
@@ -57,6 +59,16 @@ export default async function DashboardPage() {
     priority: b.priority,
   }));
 
+  const timeOffBlocks = timeOffResult.rows.map((t) => ({
+    id: t.id,
+    date: t.off_date instanceof Date
+      ? `${t.off_date.getFullYear()}-${String(t.off_date.getMonth() + 1).padStart(2, "0")}-${String(t.off_date.getDate()).padStart(2, "0")}`
+      : String(t.off_date).split("T")[0],
+    startTime: t.start_time,
+    endTime: t.end_time,
+    reason: t.reason,
+  }));
+
   return (
     <>
       <SiteHeader session={session} links={[{ href: "/", label: "← Marketplace" }]} />
@@ -67,6 +79,8 @@ export default async function DashboardPage() {
         initialProfile={profileResult.rows[0] || null}
         initialServices={servicesResult.rows}
         initialGallery={galleryResult.rows}
+        initialSchedule={scheduleResult.rows}
+        initialTimeOff={timeOffBlocks}
       />
 
       <SiteFooter />
