@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
-import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon, AlertTriangle, Lock } from "lucide-react";
+import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon, AlertTriangle, Lock, Copy } from "lucide-react";
 import { formatDuration, toMinutes, splitMinutes } from "../../lib/duration";
 import { resizeImage } from "../../lib/imageResize";
 import { toast } from "../Toast";
@@ -539,9 +539,21 @@ function ProfileForm({ initialProfile }) {
     <form onSubmit={save} className="panel-card">
       <h3 style={{ fontSize: 16, marginBottom: 4 }}>Profil de business</h3>
       {publicUrl && (
-        <a href={publicUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--steel)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}>
-          <LinkIcon size={13} strokeWidth={2.2} /> Vezi profilul tău public →
-        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14, flexWrap: "wrap" }}>
+          <a href={publicUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--steel)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <LinkIcon size={13} strokeWidth={2.2} /> Vezi profilul tău public →
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}${publicUrl}`);
+              toast("Link copiat — gata de distribuit");
+            }}
+            style={{ fontSize: 12.5, color: "var(--slate)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
+          >
+            <Copy size={13} strokeWidth={2.2} /> Copiază linkul
+          </button>
+        </div>
       )}
       {!publicUrl && <div style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 14 }}>Completează categoria și orașul ca profilul tău să apară public și în Google.</div>}
 

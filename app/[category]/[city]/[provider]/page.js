@@ -12,6 +12,7 @@ import Breadcrumbs from "../../../Breadcrumbs";
 import BookNowButton from "./BookNowButton";
 import MobileStickyBook from "./MobileStickyBook";
 import BookingSidebar from "./BookingSidebar";
+import ShareButtons from "./ShareButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -171,6 +172,7 @@ export default async function ProviderPage({ params }) {
             </a>
           )}
         </div>
+        <ShareButtons url={canonicalUrl} title={`${provider.business_name} — ${provider.category} din ${cityName} | FixEasy`} />
       </div>
 
       <div className="provider-layout">
