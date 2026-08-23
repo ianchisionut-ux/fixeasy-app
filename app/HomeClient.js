@@ -89,6 +89,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
   return (
     <>
       <div className="hero">
+        <div className="hero-photo-bg" />
         <span className="eyebrow">
           ● {providers.length} profesioniști verificați {cityDisplay ? `în ${cityDisplay}` : "activi azi"}
         </span>
