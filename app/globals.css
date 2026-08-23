@@ -64,6 +64,8 @@ header{
 .btn-orange{background:linear-gradient(135deg, var(--orange), var(--orange-dark)); color:var(--white);}
 .btn-outline{border-color:var(--line); color:var(--graphite); background:var(--white);}
 .btn-outline:hover:not(:disabled){border-color:var(--steel);}
+.btn-outline-dark{border-color:rgba(243,248,251,.3); color:var(--paper); background:transparent;}
+.btn-outline-dark:hover:not(:disabled){border-color:rgba(243,248,251,.55); background:rgba(243,248,251,.08);}
 .btn-steel{background:var(--steel); color:var(--white);}
 .btn-steel:hover:not(:disabled){background:var(--steel-light);}
 .btn-lg{padding:15px 28px; font-size:15.5px;}

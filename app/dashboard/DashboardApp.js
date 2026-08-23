@@ -126,7 +126,7 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(-1)}>‹</button>
           <b style={{ color: "var(--paper)", fontFamily: "var(--font)", fontSize: 15 }}>{title}</b>
           <button className="btn btn-steel" style={{ padding: "6px 12px" }} onClick={() => shift(1)}>›</button>
-          <button className="btn btn-outline" style={{ color: "var(--paper)", borderColor: "rgba(243,248,251,.3)", padding: "6px 12px" }} onClick={() => setCursor(nowInBucharest())}>Azi</button>
+          <button className="btn btn-outline-dark" style={{ padding: "6px 12px" }} onClick={() => setCursor(nowInBucharest())}>Azi</button>
         </div>
         <div className="cat-row" style={{ marginBottom: 0 }}>
           {["zi", "saptamana", "luna"].map((v) => (
@@ -252,7 +252,7 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
             {b.status === "pending" && (
               <>
                 <button className="btn btn-steel" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onUpdateStatus(b.rawId, "confirmed")}>Acceptă</button>
-                <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "var(--paper)", borderColor: "rgba(243,248,251,.3)" }} onClick={() => onUpdateStatus(b.rawId, "cancelled")}>Respinge</button>
+                <button className="btn btn-outline-dark" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onUpdateStatus(b.rawId, "cancelled")}>Respinge</button>
               </>
             )}
             {b.status === "confirmed" && (
