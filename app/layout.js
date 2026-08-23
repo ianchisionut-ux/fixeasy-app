@@ -6,7 +6,7 @@ import GoogleAnalytics from "./GoogleAnalytics";
 
 export const metadata = {
   title: "FixEasy — profesioniști verificați, programare rapidă",
-  description: "Marketplace pentru instalatori, electricieni și mecanici auto, cu programări online.",
+  description: "Marketplace pentru instalații sanitare, electrice, amenajări, reparații electrocasnice și mecanici auto, cu programări online.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

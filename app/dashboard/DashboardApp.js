@@ -253,7 +253,7 @@ function AccountPanel({ initialProfile, initialServices }) {
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <ProfileForm initialProfile={initialProfile} />
-      <ServicesManager initialServices={initialServices} />
+      <ServicesManager initialServices={initialServices} category={initialProfile?.category} />
       <GoogleVisibilityCard initialProfile={initialProfile} />
     </div>
   );
@@ -287,7 +287,7 @@ function GoogleVisibilityCard({ initialProfile }) {
 
 function ProfileForm({ initialProfile }) {
   const [businessName, setBusinessName] = useState(initialProfile?.business_name || "");
-  const [category, setCategory] = useState(initialProfile?.category || "Instalator");
+  const [category, setCategory] = useState(initialProfile?.category || CATEGORIES_SEO[0].category);
   const [city, setCity] = useState(initialProfile?.city || "");
   const [tags, setTags] = useState((initialProfile?.tags || []).join(", "));
   const [saving, setSaving] = useState(false);
@@ -331,9 +331,9 @@ function ProfileForm({ initialProfile }) {
       <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
       <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
       <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option>Instalator</option>
-        <option>Electrician</option>
-        <option>Mecanic auto</option>
+        {CATEGORIES_SEO.map((c) => (
+          <option key={c.category} value={c.category}>{c.category}</option>
+        ))}
       </select>
       <span className="field-label" style={{ marginTop: 12 }}>Oraș</span>
       <input value={city} onChange={(e) => setCity(e.target.value)} required />
@@ -347,12 +347,16 @@ function ProfileForm({ initialProfile }) {
   );
 }
 
-function ServicesManager({ initialServices }) {
+function ServicesManager({ initialServices, category }) {
   const [services, setServices] = useState(initialServices);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ name: "", price: "", duration: "" });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
+
+  const suggestions = CATEGORIES_SEO.find((c) => c.category === category)?.subcategories || [];
+  const existingNames = new Set(services.map((s) => s.name.toLowerCase()));
+  const availableSuggestions = suggestions.filter((s) => !existingNames.has(s.toLowerCase()));
 
   function startEdit(s) {
     setEditingId(s.id);
@@ -425,12 +429,28 @@ function ServicesManager({ initialServices }) {
       ))}
 
       {adding ? (
-        <form onSubmit={addService} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-          <input style={{ flex: 2 }} placeholder="Nume serviciu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <input style={{ flex: 1 }} type="number" placeholder="Preț (lei)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-          <input style={{ flex: 1 }} type="number" placeholder="Durată (min)" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} required />
-          <button className="btn btn-orange" style={{ padding: "8px 14px" }}>Adaugă</button>
-          <button type="button" className="btn btn-outline" style={{ padding: "8px 14px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setAdding(false)}>Anulează</button>
+        <form onSubmit={addService} style={{ marginTop: 10 }}>
+          {availableSuggestions.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+              {availableSuggestions.map((s) => (
+                <span
+                  key={s}
+                  className="tag"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setForm({ ...form, name: s })}
+                >
+                  + {s}
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input style={{ flex: 2 }} placeholder="Nume serviciu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input style={{ flex: 1 }} type="number" placeholder="Preț (lei)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            <input style={{ flex: 1 }} type="number" placeholder="Durată (min)" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} required />
+            <button className="btn btn-orange" style={{ padding: "8px 14px" }}>Adaugă</button>
+            <button type="button" className="btn btn-outline" style={{ padding: "8px 14px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setAdding(false)}>Anulează</button>
+          </div>
         </form>
       ) : (
         <button className="btn btn-steel" style={{ marginTop: 14, padding: "10px 18px" }} onClick={() => setAdding(true)}>+ Adaugă serviciu</button>

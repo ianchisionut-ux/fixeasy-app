@@ -62,7 +62,7 @@ export default async function HomePage() {
     url: "https://fixeasy-app-pmcustoms.vercel.app",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://fixeasy-app-pmcustoms.vercel.app/instalatori/{search_term_string}",
+      target: "https://fixeasy-app-pmcustoms.vercel.app/instalatii-sanitare/{search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };

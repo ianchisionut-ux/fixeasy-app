@@ -5,7 +5,7 @@ import { stripDiacritics, detectCity, COMMON_CITIES, displayCity } from "../lib/
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
 import BookingModal from "./BookingModal";
 
-const CATEGORIES = ["Toți", "Instalator", "Electrician", "Mecanic auto"];
+const CATEGORIES = ["Toți", ...CATEGORIES_SEO.map((c) => c.category)];
 
 export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
   const [category, setCategory] = useState("Toți");
@@ -93,7 +93,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
           ● {providers.length} profesioniști verificați {cityDisplay ? `în ${cityDisplay}` : "activi azi"}
         </span>
         <h1>Găsești profesionistul potrivit.<br />Programezi în 60 de secunde.</h1>
-        <p>Instalatori, electricieni și mecanici auto verificați, aproape de tine — programarea se salvează live, cu status urmărit în dashboard.</p>
+        <p>Instalații sanitare, electrice, amenajări, reparații electrocasnice și multe altele — profesioniști verificați, aproape de tine. Programarea se salvează live, cu status urmărit în dashboard.</p>
 
         <div className="hero-search">
           <button className="city-btn" onClick={() => setShowCityModal(true)} disabled={cityStatus === "detecting"}>

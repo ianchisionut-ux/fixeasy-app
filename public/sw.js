@@ -1,4 +1,4 @@
-const CACHE_NAME = "fixeasy-v6";
+const CACHE_NAME = "fixeasy-v7";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/logo.png", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/mark.png"];
 
 self.addEventListener("install", (event) => {
