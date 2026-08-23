@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MapPin } from "lucide-react";
 import BookingModal from "../../../BookingModal";
 
-export default function BookingSidebar({ provider, isLoggedIn, userRole, rating, reviewsCount, priceFrom, city, CategoryIcon, photo }) {
+export default function BookingSidebar({ provider, isLoggedIn, userRole, rating, reviewsCount, priceFrom, city, icon, photo }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -14,7 +14,7 @@ export default function BookingSidebar({ provider, isLoggedIn, userRole, rating,
           <img src={photo} alt={provider.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: "cover", margin: "0 auto 8px" }} />
         ) : (
           <div style={{ color: "var(--steel)", marginBottom: 8, display: "flex", justifyContent: "center" }}>
-            {CategoryIcon && <CategoryIcon size={30} strokeWidth={1.8} />}
+            {icon}
           </div>
         )}
         <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>{provider.name}</div>

@@ -230,7 +230,7 @@ export default async function ProviderPage({ params }) {
           reviewsCount={provider.reviews_count}
           priceFrom={prices.length > 0 ? Math.min(...prices) : null}
           city={cityName}
-          CategoryIcon={cat.icon}
+          icon={<cat.icon size={30} strokeWidth={1.8} />}
           photo={provider.profile_photo}
         />
       </div>
