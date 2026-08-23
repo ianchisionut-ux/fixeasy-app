@@ -21,7 +21,14 @@
 html{-webkit-text-size-adjust:100%; scroll-behavior:smooth;}
 body{
   font-family:var(--font); color:var(--graphite); line-height:1.55; -webkit-font-smoothing:antialiased;
-  background:var(--paper) url('/site-bg-pattern.jpg') fixed center top / cover no-repeat;
+  background:var(--paper);
+  position:relative;
+}
+body::before{
+  content:'';
+  position:fixed; inset:-20px; z-index:-1;
+  background:url('/site-bg-pattern.jpg') center top / cover no-repeat;
+  filter:blur(8px);
 }
 h1,h2,h3{font-family:var(--font); font-weight:800; letter-spacing:-0.02em;}
 .mono{font-family:var(--font); font-variant-numeric:tabular-nums;}
@@ -273,7 +280,7 @@ footer b{color:var(--paper);}
 }
 
 /* ---------- REGISTER PAGE LAYOUT ---------- */
-.register-layout{display:grid; grid-template-columns:1fr 1fr; gap:40px; max-width:920px; margin:60px auto; padding:0 24px; align-items:start;}
+.register-layout{display:grid; grid-template-columns:1fr 1fr; gap:40px; max-width:920px; margin:60px auto; padding:0 24px; align-items:center;}
 @media(max-width:800px){
   .register-layout{grid-template-columns:1fr; max-width:480px; margin:40px auto;}
 }
@@ -292,7 +299,6 @@ footer b{color:var(--paper);}
 }
 
 @media(max-width:640px){
-  body{background-attachment:scroll;}
   .hero{padding:52px 16px 48px;}
   .hero h1{font-size:28px;}
   .hero p{font-size:14.5px;}
