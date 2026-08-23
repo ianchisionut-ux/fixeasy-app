@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertTriangle, Clock } from "lucide-react";
 import { nowInBucharest } from "../lib/date";
 import { formatDuration } from "../lib/duration";
 import { trackEvent } from "./GoogleAnalytics";
@@ -26,6 +27,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
   const [slot, setSlot] = useState(null);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  const [priority, setPriority] = useState("normal");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
@@ -50,6 +52,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
           serviceId,
           date,
           time: slot,
+          priority,
           ...(needsGuestInfo && { guestName, guestPhone }),
         }),
       });
@@ -107,6 +110,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
                 <div>Prestator: <b>{confirmed.providerName}</b></div>
                 <div>Serviciu: <b>{confirmed.serviceName}</b></div>
                 <div>Interval: <b>{formatDate(confirmed.date)}, {confirmed.time}</b></div>
+                <div>Prioritate: <b style={{ color: confirmed.priority === "urgent" ? "#C94C3C" : "var(--graphite)" }}>{confirmed.priority === "urgent" ? "Urgentă" : "Normală"}</b></div>
                 <div>Status: <b style={{ color: "var(--orange-dark)" }}>În așteptare confirmare</b></div>
               </div>
               {!isLoggedIn && (
@@ -155,6 +159,16 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
                     {t}
                   </div>
                 ))}
+              </div>
+
+              <span className="field-label">Prioritate</span>
+              <div className="priority-picker">
+                <button type="button" className={"priority-btn normal" + (priority === "normal" ? " selected" : "")} onClick={() => setPriority("normal")}>
+                  <Clock size={14} strokeWidth={2.2} /> Normală
+                </button>
+                <button type="button" className={"priority-btn urgent" + (priority === "urgent" ? " selected" : "")} onClick={() => setPriority("urgent")}>
+                  <AlertTriangle size={14} strokeWidth={2.2} /> Urgentă
+                </button>
               </div>
 
               {needsGuestInfo && (

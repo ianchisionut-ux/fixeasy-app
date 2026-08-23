@@ -118,7 +118,10 @@ export default function AdminProviderEdit({ provider, initialServices, bookings 
         {bookings.length === 0 && <p style={{ color: "var(--slate)", fontSize: 13.5 }}>Nicio programare încă.</p>}
         {bookings.map((b) => (
           <div key={b.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
-            <div>{b.client_name} <span style={{ color: "var(--slate)", fontSize: 12 }}>— {b.scheduled_date}, {b.scheduled_time}</span></div>
+            <div>
+              {b.client_name} <span style={{ color: "var(--slate)", fontSize: 12 }}>— {b.scheduled_date}, {b.scheduled_time}</span>
+              {b.priority === "urgent" && <span className="priority-tag urgent" style={{ marginLeft: 6 }}>Urgentă</span>}
+            </div>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999, textTransform: "uppercase",
               background: b.status === "pending" ? "rgba(201,122,43,.15)" : b.status === "confirmed" ? "rgba(46,139,122,.15)" : b.status === "completed" ? "rgba(20,94,144,.15)" : "rgba(179,38,30,.12)",

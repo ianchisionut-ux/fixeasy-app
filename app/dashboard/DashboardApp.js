@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
-import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon } from "lucide-react";
+import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon, AlertTriangle } from "lucide-react";
 import { formatDuration, toMinutes, splitMinutes } from "../../lib/duration";
 import { resizeImage } from "../../lib/imageResize";
 import { toast } from "../Toast";
@@ -174,7 +174,7 @@ function MonthView({ cursor, byDate, onPickDay }) {
             >
               <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "var(--font)", marginBottom: 4 }}>{d.getDate()}</div>
               {items.slice(0, 2).map((b) => (
-                <div key={b.id} className={"status " + b.status} style={{ fontSize: 9, marginBottom: 2, display: "block", textAlign: "left", padding: "2px 5px" }}>
+                <div key={b.id} className={"status " + b.status} style={{ fontSize: 9, marginBottom: 2, display: "block", textAlign: "left", padding: "2px 5px", borderLeft: b.priority === "urgent" ? "2px solid #C94C3C" : "none" }}>
                   {b.time}
                 </div>
               ))}
@@ -207,7 +207,7 @@ function WeekView({ cursor, byDate, onPickDay }) {
               {WEEKDAYS_SHORT[(d.getDay() + 6) % 7]} {d.getDate()}
             </div>
             {items.map((b) => (
-              <div key={b.id} className={"status " + b.status} style={{ display: "block", marginBottom: 4, fontSize: 10, padding: "3px 6px" }}>
+              <div key={b.id} className={"status " + b.status} style={{ display: "block", marginBottom: 4, fontSize: 10, padding: "3px 6px", borderLeft: b.priority === "urgent" ? "2px solid #C94C3C" : "none" }}>
                 {b.time} · {b.clientName.split(" ")[0]}
               </div>
             ))}
@@ -219,18 +219,26 @@ function WeekView({ cursor, byDate, onPickDay }) {
 }
 
 function DayView({ cursor, bookings, onUpdateStatus }) {
-  const sorted = [...bookings].sort((a, b) => a.time.localeCompare(b.time));
+  const sorted = [...bookings].sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority === "urgent" ? -1 : 1;
+    return a.time.localeCompare(b.time);
+  });
   if (sorted.length === 0) {
     return <p style={{ color: "rgba(243,248,251,.6)", textAlign: "center", padding: "24px 0" }}>Nicio programare în această zi.</p>;
   }
   return (
     <div>
       {sorted.map((b) => (
-        <div className="dash-row" key={b.id}>
+        <div className="dash-row" key={b.id} style={b.priority === "urgent" ? { borderLeft: "3px solid #C94C3C" } : undefined}>
           <div className="who">
             <div className="mini-avatar">{b.clientName.slice(0, 2).toUpperCase()}</div>
             <div>
-              {b.clientName} — {b.serviceName}
+              {b.clientName} — {b.serviceName}{" "}
+              {b.priority === "urgent" && (
+                <span className="priority-tag urgent" style={{ marginLeft: 4 }}>
+                  <AlertTriangle size={10} strokeWidth={2.4} /> Urgentă
+                </span>
+              )}
               <br />
               <span style={{ opacity: 0.5, fontSize: 11.5 }}>
                 {b.time} · #{b.id}{b.clientPhone && <> · <Phone size={11} strokeWidth={2.2} style={{ verticalAlign: -1 }} /> {b.clientPhone}</>}

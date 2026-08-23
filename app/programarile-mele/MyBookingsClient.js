@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertTriangle, Clock } from "lucide-react";
 
 const STATUS_LABELS = { pending: "În așteptare", confirmed: "Confirmată", completed: "Finalizată", cancelled: "Anulată" };
 
@@ -32,6 +33,11 @@ export default function MyBookingsClient({ initialBookings }) {
               <b>{b.providerName}</b> — {b.serviceName}
               <br />
               <span style={{ fontSize: 12, color: "var(--slate)" }}>{b.date}, {b.time}</span>
+              {" "}
+              <span className={"priority-tag " + b.priority}>
+                {b.priority === "urgent" ? <AlertTriangle size={10} strokeWidth={2.4} /> : <Clock size={10} strokeWidth={2.4} />}
+                {b.priority === "urgent" ? "Urgentă" : "Normală"}
+              </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span className={"status " + b.status}>{STATUS_LABELS[b.status] || b.status}</span>

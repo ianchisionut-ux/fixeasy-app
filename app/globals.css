@@ -223,6 +223,14 @@ select:focus, input:focus{border-color:var(--steel); outline:none; box-shadow:0 
 footer{background:var(--graphite); color:rgba(243,248,251,.6); padding:36px 24px; text-align:center; font-size:13px;}
 footer b{color:var(--paper);}
 
+.priority-tag{font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.03em; display:inline-flex; align-items:center; gap:4px;}
+.priority-tag.urgent{background:rgba(201,76,60,.14); color:#C94C3C;}
+.priority-tag.normal{background:rgba(92,112,128,.12); color:var(--slate);}
+.priority-picker{display:flex; gap:8px;}
+.priority-btn{flex:1; padding:11px; border-radius:10px; border:1.5px solid var(--line); background:white; font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; transition:all .15s var(--ease); display:flex; align-items:center; justify-content:center; gap:6px;}
+.priority-btn.selected.normal{border-color:var(--steel); background:rgba(20,94,144,.08); color:var(--steel);}
+.priority-btn.selected.urgent{border-color:#C94C3C; background:rgba(201,76,60,.1); color:#C94C3C;}
+
 /* ---------- TOAST ---------- */
 .toast-stack{position:fixed; bottom:20px; right:20px; z-index:300; display:flex; flex-direction:column; gap:10px; max-width:calc(100vw - 40px);}
 .toast{

@@ -18,7 +18,7 @@ export async function GET(request) {
   let result;
   if (session.role === "provider") {
     result = await query(
-      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
+      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status, b.priority,
               COALESCE(u.name, b.guest_name) AS client_name,
               COALESCE(u.phone, b.guest_phone) AS client_phone,
               s.name AS service_name, pp.business_name AS provider_name
@@ -32,7 +32,7 @@ export async function GET(request) {
     );
   } else {
     result = await query(
-      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
+      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status, b.priority,
               u.name AS client_name, u.phone AS client_phone,
               s.name AS service_name, pp.business_name AS provider_name
        FROM bookings b
@@ -56,6 +56,7 @@ export async function GET(request) {
     date: b.scheduled_date,
     time: b.scheduled_time,
     status: b.status,
+    priority: b.priority,
   }));
 
   return NextResponse.json({ bookings });
@@ -69,10 +70,11 @@ export async function POST(request) {
       return NextResponse.json({ error: "Prestatorii nu pot face programari." }, { status: 403 });
     }
 
-    const { providerId, serviceId, date, time, guestName, guestPhone } = await request.json();
+    const { providerId, serviceId, date, time, guestName, guestPhone, priority } = await request.json();
     if (!providerId || !serviceId || !date || !time) {
       return NextResponse.json({ error: "Date incomplete pentru programare." }, { status: 400 });
     }
+    const finalPriority = priority === "urgent" ? "urgent" : "normal";
 
     let clientId = null;
     let finalGuestName = null;
@@ -98,10 +100,10 @@ export async function POST(request) {
     }
 
     const result = await query(
-      `INSERT INTO bookings (client_id, guest_name, guest_phone, provider_id, service_id, scheduled_date, scheduled_time, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
-       RETURNING id, scheduled_date, scheduled_time, status`,
-      [clientId, finalGuestName, finalGuestPhone, providerId, serviceId, date, time]
+      `INSERT INTO bookings (client_id, guest_name, guest_phone, provider_id, service_id, scheduled_date, scheduled_time, status, priority)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)
+       RETURNING id, scheduled_date, scheduled_time, status, priority`,
+      [clientId, finalGuestName, finalGuestPhone, providerId, serviceId, date, time, finalPriority]
     );
 
     const providerInfo = await query(
@@ -120,6 +122,7 @@ export async function POST(request) {
           date: row.scheduled_date,
           time: row.scheduled_time,
           status: row.status,
+          priority: row.priority,
         },
       },
       { status: 201 }

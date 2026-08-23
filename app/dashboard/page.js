@@ -19,7 +19,7 @@ export default async function DashboardPage() {
 
   const [bookingsResult, profileResult] = await Promise.all([
     query(
-      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
+      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status, b.priority,
               COALESCE(u.name, b.guest_name) AS client_name,
               COALESCE(u.phone, b.guest_phone) AS client_phone,
               s.name AS service_name
@@ -54,6 +54,7 @@ export default async function DashboardPage() {
     date: b.scheduled_date,
     time: b.scheduled_time,
     status: b.status,
+    priority: b.priority,
   }));
 
   return (

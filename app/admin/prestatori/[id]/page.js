@@ -31,7 +31,7 @@ export default async function AdminProviderDetailPage({ params }) {
   const [servicesResult, bookingsResult] = await Promise.all([
     query("SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id", [id]),
     query(
-      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
+      `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status, b.priority,
               COALESCE(u.name, b.guest_name) AS client_name
        FROM bookings b LEFT JOIN users u ON u.id = b.client_id
        WHERE b.provider_id = $1 ORDER BY b.created_at DESC LIMIT 20`,

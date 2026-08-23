@@ -18,7 +18,7 @@ export default async function MyBookingsPage() {
   if (session.role !== "client") redirect("/");
 
   const result = await query(
-    `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
+    `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status, b.priority,
             s.name AS service_name, pp.business_name AS provider_name,
             r.id AS review_id, r.rating AS review_rating
      FROM bookings b
@@ -35,6 +35,7 @@ export default async function MyBookingsPage() {
     date: b.scheduled_date,
     time: b.scheduled_time,
     status: b.status,
+    priority: b.priority,
     serviceName: b.service_name,
     providerName: b.provider_name,
     hasReview: !!b.review_id,
