@@ -3,7 +3,9 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
-import { Phone, MapPin, Link as LinkIcon } from "lucide-react";
+import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon } from "lucide-react";
+import { formatDuration, toMinutes, splitMinutes } from "../../lib/duration";
+import { resizeImage } from "../../lib/imageResize";
 import { toast } from "../Toast";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
@@ -27,7 +29,7 @@ function monthGrid(year, month) {
   return cells;
 }
 
-export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices }) {
+export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices, initialGallery }) {
   const [tab, setTab] = useState("calendar");
   const [bookings, setBookings] = useState(initialBookings);
 
@@ -72,7 +74,7 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
         {tab === "calendar" ? (
           <CalendarPanel bookings={bookings} onUpdateStatus={updateStatus} />
         ) : (
-          <AccountPanel initialProfile={initialProfile} initialServices={initialServices} />
+          <AccountPanel initialProfile={initialProfile} initialServices={initialServices} initialGallery={initialGallery} />
         )}
       </div>
     </section>
@@ -257,11 +259,12 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
 
 /* ---------------- ACCOUNT (profile + services) ---------------- */
 
-function AccountPanel({ initialProfile, initialServices }) {
+function AccountPanel({ initialProfile, initialServices, initialGallery }) {
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <ProfileForm initialProfile={initialProfile} />
       <ServicesManager initialServices={initialServices} category={initialProfile?.category} />
+      <GalleryManager initialGallery={initialGallery} />
       <GoogleVisibilityCard initialProfile={initialProfile} />
     </div>
   );
@@ -298,8 +301,41 @@ function ProfileForm({ initialProfile }) {
   const [category, setCategory] = useState(initialProfile?.category || CATEGORIES_SEO[0].category);
   const [city, setCity] = useState(initialProfile?.city || "");
   const [tags, setTags] = useState((initialProfile?.tags || []).join(", "));
+  const [photo, setPhoto] = useState(initialProfile?.profile_photo || null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const resized = await resizeImage(file, 500, 0.8);
+      const res = await fetch("/api/provider/photo", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo: resized }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la încărcarea pozei.");
+      setPhoto(data.profilePhoto);
+      toast("Poză de profil actualizată");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  }
+
+  async function removePhoto() {
+    const res = await fetch("/api/provider/photo", { method: "DELETE" });
+    if (res.ok) {
+      setPhoto(null);
+      toast("Poză de profil eliminată");
+    }
+  }
 
   async function save(e) {
     e.preventDefault();
@@ -336,6 +372,33 @@ function ProfileForm({ initialProfile }) {
         </a>
       )}
       {!publicUrl && <div style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 14 }}>Completează categoria și orașul ca profilul tău să apară public și în Google.</div>}
+
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 14, overflow: "hidden", flexShrink: 0,
+          background: photo ? "transparent" : "linear-gradient(135deg, var(--steel), var(--steel-light))",
+          display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)",
+        }}>
+          {photo ? (
+            <img src={photo} alt="Poză de profil" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Camera size={24} color="white" strokeWidth={1.8} />
+          )}
+        </div>
+        <div>
+          <label className="btn btn-outline" style={{ padding: "8px 14px", fontSize: 12.5, cursor: "pointer", display: "inline-flex" }}>
+            {uploadingPhoto ? "Se încarcă…" : photo ? "Schimbă poza" : "Adaugă poză de profil"}
+            <input type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} style={{ display: "none" }} />
+          </label>
+          {photo && (
+            <button type="button" onClick={removePhoto} style={{ background: "none", border: "none", color: "#B3261E", fontSize: 12, marginLeft: 10, cursor: "pointer" }}>
+              Elimină
+            </button>
+          )}
+          <div style={{ fontSize: 11, color: "var(--slate)", marginTop: 4 }}>Opțional — apare pe profilul tău public.</div>
+        </div>
+      </div>
+
       <span className="field-label">Nume business</span>
       <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
       <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
@@ -359,7 +422,7 @@ function ProfileForm({ initialProfile }) {
 function ServicesManager({ initialServices, category }) {
   const [services, setServices] = useState(initialServices);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: "", price: "", duration: "" });
+  const [form, setForm] = useState({ name: "", price: "", hours: "", minutes: "" });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
 
@@ -369,14 +432,16 @@ function ServicesManager({ initialServices, category }) {
 
   function startEdit(s) {
     setEditingId(s.id);
-    setForm({ name: s.name, price: s.price, duration: s.duration_minutes });
+    const { hours, minutes } = splitMinutes(s.duration_minutes);
+    setForm({ name: s.name, price: s.price, hours, minutes });
   }
 
   async function saveEdit(id) {
+    const duration = toMinutes(form.hours, form.minutes);
     const res = await fetch(`/api/provider/services/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name, price: Number(form.price), duration: Number(form.duration) }),
+      body: JSON.stringify({ name: form.name, price: Number(form.price), duration }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -402,16 +467,21 @@ function ServicesManager({ initialServices, category }) {
   async function addService(e) {
     e.preventDefault();
     setError("");
+    const duration = toMinutes(form.hours, form.minutes);
+    if (duration <= 0) {
+      setError("Adaugă durata serviciului.");
+      return;
+    }
     try {
       const res = await fetch("/api/provider/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, price: Number(form.price), duration: Number(form.duration) }),
+        body: JSON.stringify({ name: form.name, price: Number(form.price), duration }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setServices((prev) => [...prev, data.service]);
-      setForm({ name: "", price: "", duration: "" });
+      setForm({ name: "", price: "", hours: "", minutes: "" });
       setAdding(false);
       toast("Serviciu adăugat");
     } catch (err) {
@@ -427,16 +497,17 @@ function ServicesManager({ initialServices, category }) {
       {services.map((s) => (
         <div key={s.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
           {editingId === s.id ? (
-            <div style={{ display: "flex", gap: 8, flex: 1, flexWrap: "wrap" }}>
-              <input style={{ flex: 2 }} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <input style={{ flex: 1 }} type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Preț" />
-              <input style={{ flex: 1 }} type="number" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="Durată (min)" />
+            <div style={{ display: "flex", gap: 8, flex: 1, flexWrap: "wrap", alignItems: "center" }}>
+              <input style={{ flex: 2, minWidth: 140 }} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <input style={{ width: 80 }} type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Preț" />
+              <input style={{ width: 60 }} type="number" min="0" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="Ore" />
+              <input style={{ width: 70 }} type="number" min="0" max="59" value={form.minutes} onChange={(e) => setForm({ ...form, minutes: e.target.value })} placeholder="Minute" />
               <button className="btn btn-orange" style={{ padding: "8px 12px" }} onClick={() => saveEdit(s.id)}>Salvează</button>
               <button className="btn btn-outline" style={{ padding: "8px 12px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setEditingId(null)}>Anulează</button>
             </div>
           ) : (
             <>
-              <div>{s.name} <span className="mono" style={{ color: "var(--slate)", fontSize: 12 }}>— {s.price} lei · {s.duration_minutes} min</span></div>
+              <div>{s.name} <span className="mono" style={{ color: "var(--slate)", fontSize: 12 }}>— {s.price} lei · {formatDuration(s.duration_minutes)}</span></div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => startEdit(s)}>Editează</button>
                 <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "#B3261E", borderColor: "#F3C6C2" }} onClick={() => deleteService(s.id)}>Șterge</button>
@@ -462,10 +533,11 @@ function ServicesManager({ initialServices, category }) {
               ))}
             </div>
           )}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input style={{ flex: 2 }} placeholder="Nume serviciu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input style={{ flex: 1 }} type="number" placeholder="Preț (lei)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-            <input style={{ flex: 1 }} type="number" placeholder="Durată (min)" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} required />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <input style={{ flex: 2, minWidth: 160 }} placeholder="Nume serviciu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input style={{ width: 90 }} type="number" placeholder="Preț (lei)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            <input style={{ width: 70 }} type="number" min="0" placeholder="Ore" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
+            <input style={{ width: 80 }} type="number" min="0" max="59" placeholder="Minute" value={form.minutes} onChange={(e) => setForm({ ...form, minutes: e.target.value })} />
             <button className="btn btn-orange" style={{ padding: "8px 14px" }}>Adaugă</button>
             <button type="button" className="btn btn-outline" style={{ padding: "8px 14px", color: "var(--graphite)", borderColor: "var(--line)" }} onClick={() => setAdding(false)}>Anulează</button>
           </div>
@@ -475,6 +547,85 @@ function ServicesManager({ initialServices, category }) {
       )}
 
       {error && <div className="error-msg" style={{ marginTop: 10 }}>{error}</div>}
+    </div>
+  );
+}
+
+function GalleryManager({ initialGallery }) {
+  const [images, setImages] = useState(initialGallery || []);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleAdd(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (images.length >= 12) {
+      toast("Poți adăuga maxim 12 poze în galerie.", "error");
+      e.target.value = "";
+      return;
+    }
+    setUploading(true);
+    try {
+      const resized = await resizeImage(file, 900, 0.75);
+      const res = await fetch("/api/provider/gallery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageData: resized }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la adăugarea pozei.");
+      setImages((prev) => [...prev, data.image]);
+      toast("Poză adăugată în galerie");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleDelete(id) {
+    const res = await fetch(`/api/provider/gallery/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setImages((prev) => prev.filter((img) => img.id !== id));
+      toast("Poză ștearsă");
+    } else {
+      toast("Eroare la ștergere", "error");
+    }
+  }
+
+  return (
+    <div className="panel-card">
+      <h3 style={{ fontSize: 16, marginBottom: 4 }}>Galerie lucrări</h3>
+      <p style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 16 }}>
+        Opțional — adaugă poze cu lucrări realizate. Apar pe profilul tău public, cresc încrederea clienților.
+      </p>
+
+      {images.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 10, marginBottom: 16 }}>
+          {images.map((img) => (
+            <div key={img.id} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", border: "1px solid var(--line)" }}>
+              <img src={img.image_data} alt={img.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <button
+                onClick={() => handleDelete(img.id)}
+                style={{
+                  position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 6,
+                  background: "rgba(11,53,82,.75)", border: "none", color: "white", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Șterge poza"
+              >
+                <XIcon size={13} strokeWidth={2.4} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <label className="btn btn-steel" style={{ padding: "10px 18px", cursor: "pointer", display: "inline-flex" }}>
+        {uploading ? "Se încarcă…" : "+ Adaugă poză"}
+        <input type="file" accept="image/*" onChange={handleAdd} disabled={uploading} style={{ display: "none" }} />
+      </label>
+      <span style={{ fontSize: 11.5, color: "var(--slate)", marginLeft: 10 }}>{images.length}/12 poze</span>
     </div>
   );
 }

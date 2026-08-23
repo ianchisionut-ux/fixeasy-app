@@ -4,6 +4,7 @@ import { getSession } from "../../../../lib/auth";
 import { categoryBySlug, citySlug, providerSlug, parseProviderId } from "../../../../lib/seo";
 import { displayCity } from "../../../../lib/geo";
 import { MapPin } from "lucide-react";
+import { formatDuration } from "../../../../lib/duration";
 import SiteHeader from "../../../SiteHeader";
 import SiteFooter from "../../../SiteFooter";
 import Breadcrumbs from "../../../Breadcrumbs";
@@ -17,17 +18,17 @@ const SITE_URL = "https://fixeasy-app-pmcustoms.vercel.app";
 
 async function getProvider(id) {
   const result = await query(
-    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
+    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count, profile_photo
      FROM provider_profiles WHERE id = $1`,
     [id]
   );
   const provider = result.rows[0];
   if (!provider) return null;
-  const servicesResult = await query(
-    "SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id",
-    [id]
-  );
-  return { ...provider, services: servicesResult.rows };
+  const [servicesResult, galleryResult] = await Promise.all([
+    query("SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id", [id]),
+    query("SELECT id, image_data, caption FROM provider_gallery WHERE provider_id = $1 ORDER BY sort_order, id", [id]),
+  ]);
+  return { ...provider, services: servicesResult.rows, gallery: galleryResult.rows };
 }
 
 export async function generateMetadata({ params }) {
@@ -148,6 +149,13 @@ export default async function ProviderPage({ params }) {
       />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
+        {provider.profile_photo && (
+          <img
+            src={provider.profile_photo}
+            alt={provider.business_name}
+            style={{ width: 84, height: 84, borderRadius: 18, objectFit: "cover", margin: "0 auto 16px", border: "2px solid rgba(255,255,255,.2)", display: "block" }}
+          />
+        )}
         <span className="eyebrow"><cat.icon size={14} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {provider.category} · <MapPin size={14} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {cityName}</span>
         <h1>{provider.business_name}</h1>
         <p>
@@ -167,12 +175,27 @@ export default async function ProviderPage({ params }) {
                 <div key={s.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
                   <div>{s.name}</div>
                   <div className="mono" style={{ color: "var(--slate)", fontSize: 13 }}>
-                    {s.price > 0 ? `${s.price} lei` : "Gratuit"} · {s.duration_minutes} min
+                    {s.price > 0 ? `${s.price} lei` : "Gratuit"} · {formatDuration(s.duration_minutes)}
                   </div>
                 </div>
               ))}
             </div>
           </section>
+
+          {provider.gallery.length > 0 && (
+            <section style={{ padding: 0 }}>
+              <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
+                <h2>Lucrări realizate</h2>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+                {provider.gallery.map((img) => (
+                  <a key={img.id} href={img.image_data} target="_blank" rel="noreferrer" style={{ display: "block", borderRadius: 12, overflow: "hidden", aspectRatio: "1", border: "1px solid var(--line)" }}>
+                    <img src={img.image_data} alt={img.caption || `Lucrare ${provider.business_name}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section style={{ padding: 0 }}>
             <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
@@ -208,6 +231,7 @@ export default async function ProviderPage({ params }) {
           priceFrom={prices.length > 0 ? Math.min(...prices) : null}
           city={cityName}
           CategoryIcon={cat.icon}
+          photo={provider.profile_photo}
         />
       </div>
 

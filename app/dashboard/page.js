@@ -32,18 +32,18 @@ export default async function DashboardPage() {
       [session.id]
     ),
     query(
-      `SELECT id, business_name, category, city, tags FROM provider_profiles WHERE user_id = $1`,
+      `SELECT id, business_name, category, city, tags, profile_photo FROM provider_profiles WHERE user_id = $1`,
       [session.id]
     ),
   ]);
 
   const providerId = profileResult.rows[0]?.id;
-  const servicesResult = providerId
-    ? await query(
-        "SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id",
-        [providerId]
-      )
-    : { rows: [] };
+  const [servicesResult, galleryResult] = providerId
+    ? await Promise.all([
+        query("SELECT id, name, price, duration_minutes FROM services WHERE provider_id = $1 ORDER BY id", [providerId]),
+        query("SELECT id, image_data, caption FROM provider_gallery WHERE provider_id = $1 ORDER BY sort_order, id", [providerId]),
+      ])
+    : [{ rows: [] }, { rows: [] }];
 
   const bookings = bookingsResult.rows.map((b) => ({
     id: "b" + b.id,
@@ -65,6 +65,7 @@ export default async function DashboardPage() {
         initialBookings={bookings}
         initialProfile={profileResult.rows[0] || null}
         initialServices={servicesResult.rows}
+        initialGallery={galleryResult.rows}
       />
 
       <SiteFooter />

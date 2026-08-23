@@ -173,8 +173,12 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
               <div className="prov-card" key={p.id}>
                 <div className="prov-top">
                   <div className="prov-head">
-                    <div className="avatar">
-                      {p.init}
+                    <div className="avatar" style={p.photo ? { padding: 0, overflow: "hidden" } : undefined}>
+                      {p.photo ? (
+                        <img src={p.photo} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        p.init
+                      )}
                       {CatIcon && <span className="prov-icon-badge"><CatIcon size={11} strokeWidth={2.4} /></span>}
                     </div>
                     <div>

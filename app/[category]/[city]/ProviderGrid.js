@@ -16,7 +16,9 @@ export default function ProviderGrid({ providers, categorySlug, citySlug, isLogg
           <div className="prov-card" key={p.id}>
             <div className="prov-top">
               <div className="prov-head">
-                <div className="avatar">{p.init}</div>
+                <div className="avatar" style={p.photo ? { padding: 0, overflow: "hidden" } : undefined}>
+                  {p.photo ? <img src={p.photo} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.init}
+                </div>
                 <div>
                   <div className="prov-name">
                     <a href={`/${categorySlug}/${citySlug}/${providerSlug(p.name, p.id)}`} style={{ color: "inherit" }}>{p.name}</a>{" "}

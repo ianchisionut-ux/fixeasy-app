@@ -21,7 +21,7 @@ export async function GET(request) {
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const providersResult = await query(
-    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
+    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count, profile_photo
      FROM provider_profiles ${where} ORDER BY rating DESC`,
     params
   );
@@ -60,6 +60,7 @@ export async function GET(request) {
       .join("")
       .slice(0, 2)
       .toUpperCase(),
+    photo: p.profile_photo,
     services: servicesByProvider[p.id] || [],
   }));
 

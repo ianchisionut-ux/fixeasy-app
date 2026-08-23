@@ -39,7 +39,7 @@ export default async function CategoryCityPage({ params }) {
   const [session, providersResult] = await Promise.all([
     getSession(),
     query(
-      `SELECT id, business_name, category, city, tags, verified, rating, reviews_count
+      `SELECT id, business_name, category, city, tags, verified, rating, reviews_count, profile_photo
        FROM provider_profiles WHERE category = $1 AND city = $2 ORDER BY rating DESC`,
       [cat.category, cityCode]
     ),
@@ -68,6 +68,7 @@ export default async function CategoryCityPage({ params }) {
     priceFrom: Math.min(...(servicesByProvider[p.id]?.map((s) => s.price).filter((x) => x > 0) || [0])) || 0,
     tags: p.tags || [],
     init: p.business_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+    photo: p.profile_photo,
     services: servicesByProvider[p.id] || [],
   }));
 

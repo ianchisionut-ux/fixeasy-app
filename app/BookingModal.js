@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { nowInBucharest } from "../lib/date";
+import { formatDuration } from "../lib/duration";
 import { trackEvent } from "./GoogleAnalytics";
 
 const SLOTS = ["09:00", "10:30", "11:00", "13:00", "14:30", "16:00"];
@@ -125,7 +126,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
               <span className="field-label">Serviciu</span>
               <select value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
                 {provider.services.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} — {s.price} lei ({s.duration} min)</option>
+                  <option key={s.id} value={s.id}>{s.name} — {s.price} lei ({formatDuration(s.duration)})</option>
                 ))}
               </select>
 

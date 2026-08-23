@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: "Doar prestatorii au profil de business." }, { status: 403 });
   }
   const result = await query(
-    "SELECT id, business_name, category, city, tags, verified, rating, reviews_count FROM provider_profiles WHERE user_id = $1",
+    "SELECT id, business_name, category, city, tags, verified, rating, reviews_count, profile_photo FROM provider_profiles WHERE user_id = $1",
     [session.id]
   );
   return NextResponse.json({ profile: result.rows[0] || null });
