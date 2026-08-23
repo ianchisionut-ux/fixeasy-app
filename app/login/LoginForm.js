@@ -22,7 +22,8 @@ export default function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la autentificare.");
-      router.push(data.user.role === "provider" ? "/dashboard" : "/");
+      const dest = data.user.role === "provider" ? "/dashboard" : data.user.role === "admin" ? "/admin" : "/";
+      router.push(dest);
       router.refresh();
     } catch (err) {
       setError(err.message);

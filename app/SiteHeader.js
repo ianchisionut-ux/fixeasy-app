@@ -23,6 +23,9 @@ export default function SiteHeader({ session, links = [] }) {
   if (session?.role === "client") {
     allLinks.push({ href: "/programarile-mele", label: "Programările mele" });
   }
+  if (session?.role === "admin") {
+    allLinks.push({ href: "/admin", label: "Panou Admin" });
+  }
 
   return (
     <header>
