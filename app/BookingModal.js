@@ -23,13 +23,21 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
   const [serviceId, setServiceId] = useState(provider.services[0]?.id || "");
   const [date, setDate] = useState(days[0].iso);
   const [slot, setSlot] = useState(null);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
 
+  const needsGuestInfo = !isLoggedIn;
+
   async function submit() {
     setError("");
     if (!slot) { setError("Alege un interval orar."); return; }
+    if (needsGuestInfo && (!guestName.trim() || !guestPhone.trim())) {
+      setError("Completează numele și telefonul.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -41,6 +49,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
           serviceId,
           date,
           time: slot,
+          ...(needsGuestInfo && { guestName, guestPhone }),
         }),
       });
       const data = await res.json();
@@ -59,26 +68,6 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
     }
   }
 
-  if (!isLoggedIn) {
-    return (
-      <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div className="modal">
-          <div className="modal-head">
-            <h3>Programează — {provider.name}</h3>
-            <button className="close-x" onClick={onClose}>✕</button>
-          </div>
-          <div className="modal-body" style={{ textAlign: "center" }}>
-            <p style={{ color: "var(--slate)", marginBottom: 16 }}>
-              Trebuie să fii autentificat cu un cont de client ca să faci o programare.
-            </p>
-            <a href="/login" className="btn btn-orange" style={{ marginRight: 10 }}>Autentificare</a>
-            <a href="/inregistrare" className="btn btn-steel">Creează cont</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (userRole === "provider") {
     return (
       <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -88,7 +77,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
             <button className="close-x" onClick={onClose}>✕</button>
           </div>
           <div className="modal-body" style={{ textAlign: "center", color: "var(--slate)" }}>
-            Ești autentificat ca prestator. Doar conturile de client pot face programări.
+            Ești autentificat ca prestator. Doar clienții pot face programări.
           </div>
         </div>
       </div>
@@ -108,7 +97,9 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
               <div className="ok">✓</div>
               <h3 style={{ fontSize: 17, marginBottom: 6 }}>Programare salvată!</h3>
               <p style={{ color: "var(--slate)", fontSize: 13.5 }}>
-                Legată de contul tău — o vezi oricând în istoricul programărilor.
+                {isLoggedIn
+                  ? "Legată de contul tău — o vezi oricând în istoricul programărilor."
+                  : "Notează numărul fișei — prestatorul te va contacta la numărul de telefon dat."}
               </p>
               <div className="stub">
                 <div>FIȘĂ NR. <b>#{confirmed.id}</b></div>
@@ -117,9 +108,20 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
                 <div>Interval: <b>{formatDate(confirmed.date)}, {confirmed.time}</b></div>
                 <div>Status: <b style={{ color: "var(--orange-dark)" }}>În așteptare confirmare</b></div>
               </div>
+              {!isLoggedIn && (
+                <p style={{ fontSize: 12, color: "var(--slate)", marginTop: 14 }}>
+                  Vrei să urmărești programările tale și să lași recenzii? <a href="/inregistrare" style={{ color: "var(--steel)", fontWeight: 700 }}>Creează un cont</a> (opțional).
+                </p>
+              )}
             </div>
           ) : (
             <>
+              {needsGuestInfo && (
+                <div style={{ background: "var(--paper)", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 12.5, color: "var(--slate)" }}>
+                  Programezi fără cont — completează doar numele și telefonul. Ai deja cont? <a href="/login" style={{ color: "var(--steel)", fontWeight: 700 }}>Autentifică-te</a>
+                </div>
+              )}
+
               <span className="field-label">Serviciu</span>
               <select value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
                 {provider.services.map((s) => (
@@ -153,6 +155,16 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
                   </div>
                 ))}
               </div>
+
+              {needsGuestInfo && (
+                <>
+                  <span className="field-label">Numele tău</span>
+                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Ex: Andrei Popescu" />
+
+                  <span className="field-label">Telefon</span>
+                  <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} placeholder="07xx xxx xxx" type="tel" />
+                </>
+              )}
 
               {error && <div className="error-msg">{error}</div>}
 

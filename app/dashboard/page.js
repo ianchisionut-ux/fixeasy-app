@@ -20,9 +20,11 @@ export default async function DashboardPage() {
   const [bookingsResult, profileResult] = await Promise.all([
     query(
       `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
-              u.name AS client_name, s.name AS service_name
+              COALESCE(u.name, b.guest_name) AS client_name,
+              COALESCE(u.phone, b.guest_phone) AS client_phone,
+              s.name AS service_name
        FROM bookings b
-       JOIN users u ON u.id = b.client_id
+       LEFT JOIN users u ON u.id = b.client_id
        JOIN services s ON s.id = b.service_id
        JOIN provider_profiles pp ON pp.id = b.provider_id
        WHERE pp.user_id = $1
@@ -47,6 +49,7 @@ export default async function DashboardPage() {
     id: "b" + b.id,
     rawId: b.id,
     clientName: b.client_name,
+    clientPhone: b.client_phone,
     serviceName: b.service_name,
     date: b.scheduled_date,
     time: b.scheduled_time,

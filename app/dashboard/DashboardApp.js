@@ -224,7 +224,9 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
             <div>
               {b.clientName} — {b.serviceName}
               <br />
-              <span style={{ opacity: 0.5, fontSize: 11.5 }}>{b.time} · #{b.id}</span>
+              <span style={{ opacity: 0.5, fontSize: 11.5 }}>
+                {b.time} · #{b.id}{b.clientPhone && <> · 📞 {b.clientPhone}</>}
+              </span>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

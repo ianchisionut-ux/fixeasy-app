@@ -13,15 +13,17 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const providerId = searchParams.get("providerId");
 
-  // Prestatorul isi vede programarile primite; clientul isi vede propriile programari.
+  // Prestatorul isi vede programarile primite (client inregistrat sau vizitator);
+  // clientul autentificat isi vede propriile programari.
   let result;
   if (session.role === "provider") {
     result = await query(
       `SELECT b.id, b.scheduled_date, b.scheduled_time, b.status,
-              u.name AS client_name, u.phone AS client_phone,
+              COALESCE(u.name, b.guest_name) AS client_name,
+              COALESCE(u.phone, b.guest_phone) AS client_phone,
               s.name AS service_name, pp.business_name AS provider_name
        FROM bookings b
-       JOIN users u ON u.id = b.client_id
+       LEFT JOIN users u ON u.id = b.client_id
        JOIN services s ON s.id = b.service_id
        JOIN provider_profiles pp ON pp.id = b.provider_id
        WHERE pp.user_id = $1
@@ -62,16 +64,29 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Trebuie sa fii autentificat ca sa faci o programare." }, { status: 401 });
-    }
-    if (session.role !== "client") {
-      return NextResponse.json({ error: "Doar clientii pot face programari." }, { status: 403 });
+
+    if (session?.role === "provider") {
+      return NextResponse.json({ error: "Prestatorii nu pot face programari." }, { status: 403 });
     }
 
-    const { providerId, serviceId, date, time } = await request.json();
+    const { providerId, serviceId, date, time, guestName, guestPhone } = await request.json();
     if (!providerId || !serviceId || !date || !time) {
       return NextResponse.json({ error: "Date incomplete pentru programare." }, { status: 400 });
+    }
+
+    let clientId = null;
+    let finalGuestName = null;
+    let finalGuestPhone = null;
+
+    if (session?.role === "client") {
+      clientId = session.id;
+    } else {
+      // Programare fara cont (vizitator) — nume si telefon obligatorii.
+      if (!guestName?.trim() || !guestPhone?.trim()) {
+        return NextResponse.json({ error: "Completează numele și telefonul." }, { status: 400 });
+      }
+      finalGuestName = guestName.trim();
+      finalGuestPhone = guestPhone.trim();
     }
 
     const serviceCheck = await query(
@@ -83,10 +98,10 @@ export async function POST(request) {
     }
 
     const result = await query(
-      `INSERT INTO bookings (client_id, provider_id, service_id, scheduled_date, scheduled_time, status)
-       VALUES ($1, $2, $3, $4, $5, 'pending')
+      `INSERT INTO bookings (client_id, guest_name, guest_phone, provider_id, service_id, scheduled_date, scheduled_time, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
        RETURNING id, scheduled_date, scheduled_time, status`,
-      [session.id, providerId, serviceId, date, time]
+      [clientId, finalGuestName, finalGuestPhone, providerId, serviceId, date, time]
     );
 
     const providerInfo = await query(
