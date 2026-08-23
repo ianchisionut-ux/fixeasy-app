@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Clock } from "lucide-react";
 
 const STATUS_LABELS = { pending: "În așteptare", confirmed: "Confirmată", completed: "Finalizată", cancelled: "Anulată" };
@@ -86,7 +87,7 @@ function ReviewModal({ booking, onClose, onSaved }) {
     }
   }
 
-  return (
+  return createPortal(
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-head">
@@ -123,6 +124,7 @@ function ReviewModal({ booking, onClose, onSaved }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

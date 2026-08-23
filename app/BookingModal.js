@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Clock } from "lucide-react";
 import { nowInBucharest } from "../lib/date";
 import { formatDuration } from "../lib/duration";
@@ -73,7 +74,7 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
   }
 
   if (userRole === "provider") {
-    return (
+    return createPortal(
       <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
         <div className="modal">
           <div className="modal-head">
@@ -84,11 +85,12 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
             Ești autentificat ca prestator. Doar clienții pot face programări.
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  return (
+  return createPortal(
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-head">
@@ -190,7 +192,8 @@ export default function BookingModal({ provider, isLoggedIn, userRole, onClose }
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

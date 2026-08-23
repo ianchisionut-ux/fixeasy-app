@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { stripDiacritics, detectCity, COMMON_CITIES, displayCity } from "../lib/geo";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
@@ -243,7 +244,7 @@ function CityModal({ knownCities, currentFilter, onUseLocation, onSelect, onClos
     setDetecting(false);
   }
 
-  return (
+  return createPortal(
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-head">
@@ -281,6 +282,7 @@ function CityModal({ knownCities, currentFilter, onUseLocation, onSelect, onClos
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
