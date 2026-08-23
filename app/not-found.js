@@ -37,6 +37,7 @@ export default async function NotFound() {
           <div className="prov-grid">
             {topCategories.map((cat) => (
               <a key={cat.slug} href={`/${cat.slug}`} className="prov-card" style={{ padding: 20, textDecoration: "none" }}>
+                <div style={{ color: "var(--steel)", marginBottom: 8 }}><cat.icon size={22} strokeWidth={1.8} /></div>
                 <h3 style={{ fontSize: 16, marginBottom: 4 }}>{cat.label}</h3>
                 <p style={{ color: "var(--slate)", fontSize: 13 }}>Vezi profesioniști disponibili</p>
               </a>

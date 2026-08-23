@@ -3,6 +3,7 @@ import { query } from "../../../../lib/db";
 import { getSession } from "../../../../lib/auth";
 import { categoryBySlug, citySlug, providerSlug, parseProviderId } from "../../../../lib/seo";
 import { displayCity } from "../../../../lib/geo";
+import { MapPin } from "lucide-react";
 import SiteHeader from "../../../SiteHeader";
 import SiteFooter from "../../../SiteFooter";
 import Breadcrumbs from "../../../Breadcrumbs";
@@ -141,7 +142,7 @@ export default async function ProviderPage({ params }) {
       />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
-        <span className="eyebrow">{cat.icon} {provider.category} · 📍 {cityName}</span>
+        <span className="eyebrow"><cat.icon size={14} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {provider.category} · <MapPin size={14} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {cityName}</span>
         <h1>{provider.business_name}</h1>
         <p>
           ★ {provider.rating} din {provider.reviews_count} recenzii · {provider.tags?.join(" · ")}
@@ -200,7 +201,7 @@ export default async function ProviderPage({ params }) {
           reviewsCount={provider.reviews_count}
           priceFrom={prices.length > 0 ? Math.min(...prices) : null}
           city={cityName}
-          categoryIcon={cat.icon}
+          CategoryIcon={cat.icon}
         />
       </div>
 

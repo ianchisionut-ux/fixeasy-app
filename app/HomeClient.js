@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { stripDiacritics, detectCity, COMMON_CITIES, displayCity } from "../lib/geo";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
+import { MapPin, Search } from "lucide-react";
 import BookingModal from "./BookingModal";
 import SkeletonProviderCard from "./SkeletonProviderCard";
 
@@ -99,7 +100,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
 
         <div className="hero-search">
           <button className="city-btn" onClick={() => setShowCityModal(true)} disabled={cityStatus === "detecting"}>
-            📍 {cityLabel} <span style={{ opacity: 0.6 }}>▾</span>
+            <MapPin size={16} strokeWidth={2.2} style={{ verticalAlign: -3 }} /> {cityLabel} <span style={{ opacity: 0.6 }}>▾</span>
           </button>
           <a href="#marketplace" className="btn btn-orange btn-lg">Caută profesioniști</a>
         </div>
@@ -124,14 +125,14 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
 
         <div className="cat-row">
           {CATEGORIES.map((cat) => {
-            const catIcon = CATEGORIES_SEO.find((c) => c.category === cat)?.icon;
+            const Icon = CATEGORIES_SEO.find((c) => c.category === cat)?.icon;
             return (
               <button
                 key={cat}
                 className={"cat-btn" + (category === cat ? " active" : "")}
                 onClick={() => setCategory(cat)}
               >
-                {catIcon && <span style={{ marginRight: 6 }}>{catIcon}</span>}{cat}
+                {Icon && <Icon size={15} strokeWidth={2.2} style={{ marginRight: 6, verticalAlign: -3 }} />}{cat}
               </button>
             );
           })}
@@ -150,7 +151,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
           </div>
         ) : providers.length === 0 ? (
           <div className="empty-state">
-            <div className="big">🔍</div>
+            <div className="big"><Search size={34} strokeWidth={1.8} /></div>
             <p>Niciun prestator încă {cityDisplay ? `în ${cityDisplay}` : ""} pentru această categorie.</p>
             {cityDisplay && (
               <button className="btn btn-outline" style={{ marginTop: 14 }} onClick={() => applyCity(null, null)}>
@@ -163,19 +164,22 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
             {providers.map((p) => {
               const catSeo = CATEGORIES_SEO.find((c) => c.category === p.cat);
               const href = catSeo ? `/${catSeo.slug}/${citySlug(p.city)}/${providerSlug(p.name, p.id)}` : null;
+              const CatIcon = catSeo?.icon;
               return (
               <div className="prov-card" key={p.id}>
                 <div className="prov-top">
                   <div className="prov-head">
                     <div className="avatar">
                       {p.init}
-                      {catSeo?.icon && <span className="prov-icon-badge">{catSeo.icon}</span>}
+                      {CatIcon && <span className="prov-icon-badge"><CatIcon size={11} strokeWidth={2.4} /></span>}
                     </div>
                     <div>
                       <div className="prov-name">
                         {href ? <a href={href} style={{ color: "inherit" }}>{p.name}</a> : p.name} {p.tags?.length > 0 && <span className="badge-verified">VERIFICAT</span>}
                       </div>
-                      <div className="prov-meta">{catSeo?.icon} {p.cat} · 📍 {displayCity(p.city)}</div>
+                      <div className="prov-meta">
+                        {CatIcon && <CatIcon size={12} strokeWidth={2.2} style={{ verticalAlign: -2 }} />} {p.cat} · <MapPin size={12} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {displayCity(p.city)}
+                      </div>
                     </div>
                   </div>
                   <div className="prov-rating">
@@ -240,7 +244,7 @@ function CityModal({ knownCities, currentFilter, onUseLocation, onSelect, onClos
         </div>
         <div className="modal-body">
           <button className="geo-btn" onClick={handleUseLocation} disabled={detecting}>
-            📍 {detecting ? "Se detectează…" : "Folosește locația mea"}
+            <MapPin size={16} strokeWidth={2.2} style={{ verticalAlign: -3 }} /> {detecting ? "Se detectează…" : "Folosește locația mea"}
           </button>
 
           <div className="city-list">

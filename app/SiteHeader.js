@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Menu, X } from "lucide-react";
 
 export default function SiteHeader({ session, links = [] }) {
   const [open, setOpen] = useState(false);
@@ -48,7 +49,7 @@ export default function SiteHeader({ session, links = [] }) {
         </div>
 
         <button className="hamburger" aria-label="Meniu" onClick={() => setOpen(!open)}>
-          {open ? "✕" : "☰"}
+          {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
         </button>
 
         <div className={"mobile-drawer" + (open ? " open" : "")}>

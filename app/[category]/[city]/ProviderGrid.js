@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MapPin } from "lucide-react";
 import { providerSlug } from "../../../lib/seo";
 import { displayCity } from "../../../lib/geo";
 import BookingModal from "../../BookingModal";
@@ -21,7 +22,7 @@ export default function ProviderGrid({ providers, categorySlug, citySlug, isLogg
                     <a href={`/${categorySlug}/${citySlug}/${providerSlug(p.name, p.id)}`} style={{ color: "inherit" }}>{p.name}</a>{" "}
                     {p.tags?.length > 0 && <span className="badge-verified">VERIFICAT</span>}
                   </div>
-                  <div className="prov-meta">{p.cat} · 📍 {displayCity(p.city)}</div>
+                  <div className="prov-meta">{p.cat} · <MapPin size={12} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {displayCity(p.city)}</div>
                 </div>
               </div>
               <div className="prov-rating">

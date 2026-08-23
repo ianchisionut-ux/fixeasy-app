@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
+import { Phone, MapPin, Link as LinkIcon } from "lucide-react";
 import { toast } from "../Toast";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
@@ -230,7 +231,7 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
               {b.clientName} — {b.serviceName}
               <br />
               <span style={{ opacity: 0.5, fontSize: 11.5 }}>
-                {b.time} · #{b.id}{b.clientPhone && <> · 📞 {b.clientPhone}</>}
+                {b.time} · #{b.id}{b.clientPhone && <> · <Phone size={11} strokeWidth={2.2} style={{ verticalAlign: -1 }} /> {b.clientPhone}</>}
               </span>
             </div>
           </div>
@@ -274,7 +275,7 @@ function GoogleVisibilityCard({ initialProfile }) {
 
   return (
     <div className="panel-card">
-      <h3 style={{ fontSize: 16, marginBottom: 6 }}>📍 Apari și pe Google</h3>
+      <h3 style={{ fontSize: 16, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}><MapPin size={17} strokeWidth={2.2} /> Apari și pe Google</h3>
       <p style={{ fontSize: 13.5, color: "var(--slate)", marginBottom: 16 }}>
         Profilul tău FixEasy e deja pregătit pentru Google Search (pagină indexabilă cu recenzii și prețuri).
         Pentru și mai multă vizibilitate — inclusiv pe Google Maps — creează-ți gratuit un <b>Google Business Profile</b> și
@@ -330,8 +331,8 @@ function ProfileForm({ initialProfile }) {
     <form onSubmit={save} className="panel-card">
       <h3 style={{ fontSize: 16, marginBottom: 4 }}>Profil de business</h3>
       {publicUrl && (
-        <a href={publicUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--steel)", fontWeight: 700, display: "inline-block", marginBottom: 14 }}>
-          🔗 Vezi profilul tău public →
+        <a href={publicUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--steel)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}>
+          <LinkIcon size={13} strokeWidth={2.2} /> Vezi profilul tău public →
         </a>
       )}
       {!publicUrl && <div style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 14 }}>Completează categoria și orașul ca profilul tău să apară public și în Google.</div>}
@@ -340,7 +341,7 @@ function ProfileForm({ initialProfile }) {
       <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
       <select value={category} onChange={(e) => setCategory(e.target.value)}>
         {CATEGORIES_SEO.map((c) => (
-          <option key={c.category} value={c.category}>{c.icon} {c.category}</option>
+          <option key={c.category} value={c.category}>{c.category}</option>
         ))}
       </select>
       <span className="field-label" style={{ marginTop: 12 }}>Oraș</span>

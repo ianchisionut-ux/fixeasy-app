@@ -3,6 +3,7 @@ import { query } from "../../../lib/db";
 import { getSession } from "../../../lib/auth";
 import { categoryBySlug, cityFromSlug, providerSlug } from "../../../lib/seo";
 import { displayCity } from "../../../lib/geo";
+import { Search } from "lucide-react";
 import SiteHeader from "../../SiteHeader";
 import SiteFooter from "../../SiteFooter";
 import Breadcrumbs from "../../Breadcrumbs";
@@ -84,7 +85,7 @@ export default async function CategoryCityPage({ params }) {
       <Breadcrumbs items={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }, { href: `/${cat.slug}/${citySlugParam}`, label: cityName }]} />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
-        <span className="eyebrow">{cat.icon} {cityName}</span>
+        <span className="eyebrow"><cat.icon size={14} strokeWidth={2.2} style={{ verticalAlign: -2 }} /> {cityName}</span>
         <h1>{cat.label} din {cityName}</h1>
         <p>{providers.length} {cat.label.toLowerCase()} verificați, disponibili pentru programare online în {cityName}.</p>
       </div>
@@ -92,7 +93,7 @@ export default async function CategoryCityPage({ params }) {
       <section>
         {providers.length === 0 ? (
           <div className="empty-state">
-            <div className="big">🔍</div>
+            <div className="big"><Search size={34} strokeWidth={1.8} /></div>
             <p>Momentan nu avem {cat.label.toLowerCase()} listați în {cityName}.</p>
             <a href={`/${cat.slug}`} className="btn btn-outline" style={{ marginTop: 14 }}>Vezi alte orașe</a>
           </div>
