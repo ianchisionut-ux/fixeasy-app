@@ -4,6 +4,7 @@ import { getSession } from "../../../../lib/auth";
 import { categoryBySlug, citySlug, providerSlug, parseProviderId } from "../../../../lib/seo";
 import { displayCity } from "../../../../lib/geo";
 import { MapPin } from "lucide-react";
+import { Phone } from "lucide-react";
 import { formatDuration } from "../../../../lib/duration";
 import SiteHeader from "../../../SiteHeader";
 import SiteFooter from "../../../SiteFooter";
@@ -18,8 +19,9 @@ const SITE_URL = "https://fixeasy-app-pmcustoms.vercel.app";
 
 async function getProvider(id) {
   const result = await query(
-    `SELECT id, business_name, category, city, tags, verified, rating, reviews_count, profile_photo
-     FROM provider_profiles WHERE id = $1`,
+    `SELECT pp.id, pp.business_name, pp.category, pp.city, pp.tags, pp.verified, pp.rating, pp.reviews_count, pp.profile_photo, u.phone
+     FROM provider_profiles pp JOIN users u ON u.id = pp.user_id
+     WHERE pp.id = $1`,
     [id]
   );
   const provider = result.rows[0];
@@ -161,7 +163,14 @@ export default async function ProviderPage({ params }) {
         <p>
           ★ {provider.rating} din {provider.reviews_count} recenzii · {provider.tags?.join(" · ")}
         </p>
-        <BookNowButton provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} />
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          <BookNowButton provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} />
+          {provider.phone && (
+            <a href={`tel:${provider.phone}`} className="btn btn-ghost-light btn-lg">
+              <Phone size={17} strokeWidth={2.2} /> Sună acum
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="provider-layout">
@@ -232,11 +241,12 @@ export default async function ProviderPage({ params }) {
           city={cityName}
           icon={<cat.icon size={30} strokeWidth={1.8} />}
           photo={provider.profile_photo}
+          phone={provider.phone}
         />
       </div>
 
       <div className="mobile-cta-spacer" />
-      <MobileStickyBook provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} priceFrom={prices.length > 0 ? Math.min(...prices) : null} />
+      <MobileStickyBook provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} priceFrom={prices.length > 0 ? Math.min(...prices) : null} phone={provider.phone} />
 
       <SiteFooter />
     </>

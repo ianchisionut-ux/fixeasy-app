@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Phone } from "lucide-react";
 import BookingModal from "../../../BookingModal";
 
-export default function MobileStickyBook({ provider, isLoggedIn, userRole, priceFrom }) {
+export default function MobileStickyBook({ provider, isLoggedIn, userRole, priceFrom, phone }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -16,7 +17,14 @@ export default function MobileStickyBook({ provider, isLoggedIn, userRole, price
             </>
           )}
         </div>
-        <button className="btn btn-orange" onClick={() => setOpen(true)}>Programează</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {phone && (
+            <a href={`tel:${phone}`} className="btn btn-outline" aria-label="Sună acum" style={{ padding: "0 14px" }}>
+              <Phone size={17} strokeWidth={2.2} />
+            </a>
+          )}
+          <button className="btn btn-orange" onClick={() => setOpen(true)}>Programează</button>
+        </div>
       </div>
       {open && (
         <BookingModal provider={provider} isLoggedIn={isLoggedIn} userRole={userRole} onClose={() => setOpen(false)} />

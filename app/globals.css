@@ -182,7 +182,7 @@ section{padding:64px 24px; max-width:1180px; margin:0 auto;}
 .cta-band-stats .stat-label{font-size:11px; color:rgba(243,248,251,.6); text-transform:uppercase; letter-spacing:.04em;}
 
 /* ---------- MODAL ---------- */
-.overlay{position:fixed; inset:0; background:rgba(11,53,82,.5); backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; animation:fadeIn .15s var(--ease);}
+.overlay{position:fixed; inset:0; background:rgba(11,53,82,.72); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; animation:fadeIn .15s var(--ease);}
 @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
 .modal{background:var(--white); border-radius:var(--radius); max-width:420px; width:100%; overflow:hidden; box-shadow:var(--shadow-lg); animation:popIn .18s var(--ease);}
 @keyframes popIn{from{opacity:0; transform:scale(.96) translateY(8px);} to{opacity:1; transform:scale(1) translateY(0);}}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import BookingModal from "../../../BookingModal";
 
-export default function BookingSidebar({ provider, isLoggedIn, userRole, rating, reviewsCount, priceFrom, city, icon, photo }) {
+export default function BookingSidebar({ provider, isLoggedIn, userRole, rating, reviewsCount, priceFrom, city, icon, photo, phone }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,6 +36,11 @@ export default function BookingSidebar({ provider, isLoggedIn, userRole, rating,
         <button className="btn btn-orange btn-lg" style={{ width: "100%" }} onClick={() => setOpen(true)}>
           Programează acum
         </button>
+        {phone && (
+          <a href={`tel:${phone}`} className="btn btn-outline" style={{ width: "100%", marginTop: 8 }}>
+            <Phone size={15} strokeWidth={2.2} /> Sună acum
+          </a>
+        )}
         <p style={{ fontSize: 11.5, color: "var(--slate)", marginTop: 12 }}>Fără cont necesar — doar nume și telefon.</p>
       </div>
 
