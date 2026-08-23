@@ -5,7 +5,9 @@ import { categoryBySlug, citySlug, providerSlug, parseProviderId } from "../../.
 import { displayCity } from "../../../../lib/geo";
 import SiteHeader from "../../../SiteHeader";
 import SiteFooter from "../../../SiteFooter";
+import Breadcrumbs from "../../../Breadcrumbs";
 import BookNowButton from "./BookNowButton";
+import MobileStickyBook from "./MobileStickyBook";
 
 export const dynamic = "force-dynamic";
 
@@ -128,6 +130,14 @@ export default async function ProviderPage({ params }) {
           { href: `/${canonicalCategorySlug}/${canonicalCitySlug}`, label: cityName },
         ]}
       />
+      <Breadcrumbs
+        items={[
+          { href: "/", label: "Acasă" },
+          { href: `/${canonicalCategorySlug}`, label: cat.label },
+          { href: `/${canonicalCategorySlug}/${canonicalCitySlug}`, label: cityName },
+          { href: canonicalUrl.replace(SITE_URL, ""), label: provider.business_name },
+        ]}
+      />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
         <span className="eyebrow">{provider.category} · 📍 {cityName}</span>
@@ -177,6 +187,9 @@ export default async function ProviderPage({ params }) {
           </div>
         )}
       </section>
+
+      <div className="mobile-cta-spacer" />
+      <MobileStickyBook provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} priceFrom={prices.length > 0 ? Math.min(...prices) : null} />
 
       <SiteFooter />
     </>

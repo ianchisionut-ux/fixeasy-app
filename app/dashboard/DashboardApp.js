@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
+import { toast } from "../Toast";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
 const MONTHS_RO = ["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
@@ -40,6 +41,10 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
     });
     if (res.ok) {
       setBookings((prev) => prev.map((b) => (b.rawId === rawId ? { ...b, status } : b)));
+      const labels = { confirmed: "Programare acceptată", cancelled: "Programare respinsă", completed: "Programare marcată ca finalizată" };
+      toast(labels[status] || "Status actualizat");
+    } else {
+      toast("Eroare la actualizarea programării", "error");
     }
   }
 
@@ -293,12 +298,12 @@ function ProfileForm({ initialProfile }) {
   const [city, setCity] = useState(initialProfile?.city || "");
   const [tags, setTags] = useState((initialProfile?.tags || []).join(", "));
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   async function save(e) {
     e.preventDefault();
     setSaving(true);
-    setMessage("");
+    setError("");
     try {
       const res = await fetch("/api/provider/profile", {
         method: "PUT",
@@ -307,9 +312,10 @@ function ProfileForm({ initialProfile }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la salvare.");
-      setMessage("Profil salvat.");
+      toast("Profil salvat");
     } catch (err) {
-      setMessage(err.message);
+      setError(err.message);
+      toast(err.message, "error");
     } finally {
       setSaving(false);
     }
@@ -341,7 +347,7 @@ function ProfileForm({ initialProfile }) {
       <input value={city} onChange={(e) => setCity(e.target.value)} required />
       <span className="field-label" style={{ marginTop: 12 }}>Etichete (separate prin virgulă)</span>
       <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Ex: Urgențe 24/7, Autorizat ANRE" />
-      {message && <div style={{ marginTop: 10, fontSize: 13, color: message === "Profil salvat." ? "var(--green)" : "#B3261E" }}>{message}</div>}
+      {error && <div className="error-msg" style={{ marginTop: 10 }}>{error}</div>}
       <button className="btn btn-orange" style={{ marginTop: 14, padding: "10px 20px" }} disabled={saving}>
         {saving ? "Se salvează…" : "Salvează profilul"}
       </button>
@@ -375,14 +381,21 @@ function ServicesManager({ initialServices, category }) {
     if (res.ok) {
       setServices((prev) => prev.map((s) => (s.id === id ? data.service : s)));
       setEditingId(null);
+      toast("Serviciu actualizat");
     } else {
       setError(data.error);
+      toast(data.error || "Eroare la actualizare", "error");
     }
   }
 
   async function deleteService(id) {
     const res = await fetch(`/api/provider/services/${id}`, { method: "DELETE" });
-    if (res.ok) setServices((prev) => prev.filter((s) => s.id !== id));
+    if (res.ok) {
+      setServices((prev) => prev.filter((s) => s.id !== id));
+      toast("Serviciu șters");
+    } else {
+      toast("Eroare la ștergere", "error");
+    }
   }
 
   async function addService(e) {
@@ -399,8 +412,10 @@ function ServicesManager({ initialServices, category }) {
       setServices((prev) => [...prev, data.service]);
       setForm({ name: "", price: "", duration: "" });
       setAdding(false);
+      toast("Serviciu adăugat");
     } catch (err) {
       setError(err.message);
+      toast(err.message, "error");
     }
   }
 

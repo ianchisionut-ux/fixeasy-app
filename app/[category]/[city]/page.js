@@ -5,6 +5,7 @@ import { categoryBySlug, cityFromSlug, providerSlug } from "../../../lib/seo";
 import { displayCity } from "../../../lib/geo";
 import SiteHeader from "../../SiteHeader";
 import SiteFooter from "../../SiteFooter";
+import Breadcrumbs from "../../Breadcrumbs";
 import ProviderGrid from "./ProviderGrid";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +81,7 @@ export default async function CategoryCityPage({ params }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
 
       <SiteHeader session={session} links={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }]} />
+      <Breadcrumbs items={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }, { href: `/${cat.slug}/${citySlugParam}`, label: cityName }]} />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
         <span className="eyebrow">📍 {cityName}</span>

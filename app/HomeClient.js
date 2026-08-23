@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { stripDiacritics, detectCity, COMMON_CITIES, displayCity } from "../lib/geo";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
 import BookingModal from "./BookingModal";
+import SkeletonProviderCard from "./SkeletonProviderCard";
 
 const CATEGORIES = ["Toți", ...CATEGORIES_SEO.map((c) => c.category)];
 
@@ -138,7 +139,13 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
           <button onClick={() => setShowCityModal(true)}>Schimbă orașul</button>
         </div>
 
-        {providers.length === 0 && !loading ? (
+        {loading ? (
+          <div className="prov-grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonProviderCard key={i} />
+            ))}
+          </div>
+        ) : providers.length === 0 ? (
           <div className="empty-state">
             <div className="big">🔍</div>
             <p>Niciun prestator încă {cityDisplay ? `în ${cityDisplay}` : ""} pentru această categorie.</p>
@@ -149,7 +156,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
             )}
           </div>
         ) : (
-          <div className="prov-grid" style={{ opacity: loading ? 0.5 : 1 }}>
+          <div className="prov-grid">
             {providers.map((p) => {
               const catSeo = CATEGORIES_SEO.find((c) => c.category === p.cat);
               const href = catSeo ? `/${catSeo.slug}/${citySlug(p.city)}/${providerSlug(p.name, p.id)}` : null;

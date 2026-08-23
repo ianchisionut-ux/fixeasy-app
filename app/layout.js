@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
 import InstallPrompt from "./InstallPrompt";
 import GoogleAnalytics from "./GoogleAnalytics";
+import ToastContainer from "./Toast";
 
 export const metadata = {
   title: "FixEasy — profesioniști verificați, programare rapidă",
@@ -41,6 +42,7 @@ export default function RootLayout({ children }) {
         {children}
         <ServiceWorkerRegister />
         <InstallPrompt />
+        <ToastContainer />
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>

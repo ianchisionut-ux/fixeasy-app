@@ -5,6 +5,7 @@ import { categoryBySlug, citySlug } from "../../lib/seo";
 import { displayCity } from "../../lib/geo";
 import SiteHeader from "../SiteHeader";
 import SiteFooter from "../SiteFooter";
+import Breadcrumbs from "../Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function CategoryHubPage({ params }) {
   return (
     <>
       <SiteHeader session={session} links={[{ href: "/", label: "Acasă" }]} />
+      <Breadcrumbs items={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }]} />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
         <span className="eyebrow">{cat.label}</span>
