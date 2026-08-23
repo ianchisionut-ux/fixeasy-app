@@ -39,7 +39,7 @@ export default async function CategoryHubPage({ params }) {
       <Breadcrumbs items={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }]} />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
-        <span className="eyebrow">{cat.label}</span>
+        <span className="eyebrow">{cat.icon} {cat.label}</span>
         <h1>{cat.label} verificați, în orașul tău</h1>
         <p>Alege orașul pentru a vedea {cat.label.toLowerCase()} disponibili și a programa direct online.</p>
       </div>
@@ -52,6 +52,7 @@ export default async function CategoryHubPage({ params }) {
         <div className="prov-grid">
           {citiesResult.rows.map((row) => (
             <a key={row.city} href={`/${cat.slug}/${citySlug(row.city)}`} className="prov-card" style={{ padding: 20, textDecoration: "none" }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>{cat.icon}</div>
               <h3 style={{ fontSize: 17, marginBottom: 6 }}>{cat.label} din {displayCity(row.city)}</h3>
               <p style={{ color: "var(--slate)", fontSize: 13.5 }}>{row.count} prestatori disponibili</p>
             </a>

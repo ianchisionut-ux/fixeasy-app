@@ -84,7 +84,7 @@ export default async function CategoryCityPage({ params }) {
       <Breadcrumbs items={[{ href: "/", label: "Acasă" }, { href: `/${cat.slug}`, label: cat.label }, { href: `/${cat.slug}/${citySlugParam}`, label: cityName }]} />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
-        <span className="eyebrow">📍 {cityName}</span>
+        <span className="eyebrow">{cat.icon} {cityName}</span>
         <h1>{cat.label} din {cityName}</h1>
         <p>{providers.length} {cat.label.toLowerCase()} verificați, disponibili pentru programare online în {cityName}.</p>
       </div>

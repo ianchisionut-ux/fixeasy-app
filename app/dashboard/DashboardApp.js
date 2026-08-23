@@ -340,7 +340,7 @@ function ProfileForm({ initialProfile }) {
       <span className="field-label" style={{ marginTop: 12 }}>Categorie</span>
       <select value={category} onChange={(e) => setCategory(e.target.value)}>
         {CATEGORIES_SEO.map((c) => (
-          <option key={c.category} value={c.category}>{c.category}</option>
+          <option key={c.category} value={c.category}>{c.icon} {c.category}</option>
         ))}
       </select>
       <span className="field-label" style={{ marginTop: 12 }}>Oraș</span>

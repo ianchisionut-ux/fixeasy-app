@@ -89,21 +89,21 @@ export default async function HomePage() {
             <h3>Pentru clienți</h3>
             <div className="how-sub">De la căutare la lucrare finalizată</div>
             <div className="how-step">
-              <div className="how-num">1</div>
+              <div className="how-num">🔍</div>
               <div>
                 <div className="how-step-title">Cauți în zona ta</div>
                 <div className="how-step-text">Filtrezi după meserie și oraș — vezi doar prestatori relevanți pentru tine.</div>
               </div>
             </div>
             <div className="how-step">
-              <div className="how-num">2</div>
+              <div className="how-num">📅</div>
               <div>
                 <div className="how-step-title">Alegi un slot liber</div>
                 <div className="how-step-text">Programezi direct în calendarul prestatorului, fără telefoane.</div>
               </div>
             </div>
             <div className="how-step">
-              <div className="how-num">3</div>
+              <div className="how-num">✅</div>
               <div>
                 <div className="how-step-title">Primești confirmare</div>
                 <div className="how-step-text">Notificare instant, plus status urmărit live în cont.</div>
@@ -115,21 +115,21 @@ export default async function HomePage() {
             <h3>Pentru prestatori</h3>
             <div className="how-sub">De la înscriere la primul client nou</div>
             <div className="how-step">
-              <div className="how-num">1</div>
+              <div className="how-num">📝</div>
               <div>
                 <div className="how-step-title">Îți creezi profilul</div>
                 <div className="how-step-text">Adaugi serviciile, prețurile și orașul în care lucrezi.</div>
               </div>
             </div>
             <div className="how-step">
-              <div className="how-num">2</div>
+              <div className="how-num">📍</div>
               <div>
                 <div className="how-step-title">Apari clienților din zonă</div>
                 <div className="how-step-text">Ești vizibil automat clienților care caută în orașul tău.</div>
               </div>
             </div>
             <div className="how-step">
-              <div className="how-num">3</div>
+              <div className="how-num">📆</div>
               <div>
                 <div className="how-step-title">Accepți programări</div>
                 <div className="how-step-text">Gestionezi totul dintr-un calendar simplu — acceptă sau respinge într-un click.</div>

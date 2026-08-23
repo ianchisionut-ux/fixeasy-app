@@ -123,15 +123,18 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
         </div>
 
         <div className="cat-row">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              className={"cat-btn" + (category === cat ? " active" : "")}
-              onClick={() => setCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const catIcon = CATEGORIES_SEO.find((c) => c.category === cat)?.icon;
+            return (
+              <button
+                key={cat}
+                className={"cat-btn" + (category === cat ? " active" : "")}
+                onClick={() => setCategory(cat)}
+              >
+                {catIcon && <span style={{ marginRight: 6 }}>{catIcon}</span>}{cat}
+              </button>
+            );
+          })}
         </div>
 
         <div className="results-toolbar">
@@ -164,12 +167,15 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
               <div className="prov-card" key={p.id}>
                 <div className="prov-top">
                   <div className="prov-head">
-                    <div className="avatar">{p.init}</div>
+                    <div className="avatar">
+                      {p.init}
+                      {catSeo?.icon && <span className="prov-icon-badge">{catSeo.icon}</span>}
+                    </div>
                     <div>
                       <div className="prov-name">
                         {href ? <a href={href} style={{ color: "inherit" }}>{p.name}</a> : p.name} {p.tags?.length > 0 && <span className="badge-verified">VERIFICAT</span>}
                       </div>
-                      <div className="prov-meta">{p.cat} · 📍 {displayCity(p.city)}</div>
+                      <div className="prov-meta">{catSeo?.icon} {p.cat} · 📍 {displayCity(p.city)}</div>
                     </div>
                   </div>
                   <div className="prov-rating">

@@ -8,6 +8,7 @@ import SiteFooter from "../../../SiteFooter";
 import Breadcrumbs from "../../../Breadcrumbs";
 import BookNowButton from "./BookNowButton";
 import MobileStickyBook from "./MobileStickyBook";
+import BookingSidebar from "./BookingSidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -140,7 +141,7 @@ export default async function ProviderPage({ params }) {
       />
 
       <div className="hero" style={{ padding: "56px 24px" }}>
-        <span className="eyebrow">{provider.category} · 📍 {cityName}</span>
+        <span className="eyebrow">{cat.icon} {provider.category} · 📍 {cityName}</span>
         <h1>{provider.business_name}</h1>
         <p>
           ★ {provider.rating} din {provider.reviews_count} recenzii · {provider.tags?.join(" · ")}
@@ -148,45 +149,60 @@ export default async function ProviderPage({ params }) {
         <BookNowButton provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} />
       </div>
 
-      <section style={{ maxWidth: 720 }}>
-        <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
-          <h2>Servicii oferite</h2>
-        </div>
-        <div className="panel-card">
-          {provider.services.map((s) => (
-            <div key={s.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
-              <div>{s.name}</div>
-              <div className="mono" style={{ color: "var(--slate)", fontSize: 13 }}>
-                {s.price > 0 ? `${s.price} lei` : "Gratuit"} · {s.duration_minutes} min
-              </div>
+      <div className="provider-layout">
+        <div className="provider-main">
+          <section style={{ padding: 0 }}>
+            <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
+              <h2>Servicii oferite</h2>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="panel-card">
+              {provider.services.map((s) => (
+                <div key={s.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
+                  <div>{s.name}</div>
+                  <div className="mono" style={{ color: "var(--slate)", fontSize: 13 }}>
+                    {s.price > 0 ? `${s.price} lei` : "Gratuit"} · {s.duration_minutes} min
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-      <section style={{ maxWidth: 720 }}>
-        <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
-          <h2>Recenzii ({provider.reviews_count})</h2>
-        </div>
-        {reviews.length === 0 ? (
-          <p style={{ color: "var(--slate)", fontSize: 14 }}>Niciun client nu a lăsat încă o recenzie.</p>
-        ) : (
-          <div style={{ display: "grid", gap: 12 }}>
-            {reviews.map((r, i) => (
-              <div key={i} className="panel-card">
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <b style={{ fontSize: 14 }}>{r.client_name}</b>
-                  <span style={{ color: "var(--orange-dark)", fontWeight: 700 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
-                </div>
-                {r.comment && <p style={{ fontSize: 13.5, color: "var(--slate)" }}>{r.comment}</p>}
-                <div style={{ fontSize: 11.5, color: "var(--slate)", marginTop: 8 }}>
-                  {new Date(r.created_at).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}
-                </div>
+          <section style={{ padding: 0 }}>
+            <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
+              <h2>Recenzii ({provider.reviews_count})</h2>
+            </div>
+            {reviews.length === 0 ? (
+              <p style={{ color: "var(--slate)", fontSize: 14 }}>Niciun client nu a lăsat încă o recenzie.</p>
+            ) : (
+              <div style={{ display: "grid", gap: 12 }}>
+                {reviews.map((r, i) => (
+                  <div key={i} className="panel-card">
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <b style={{ fontSize: 14 }}>{r.client_name}</b>
+                      <span style={{ color: "var(--orange-dark)", fontWeight: 700 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                    </div>
+                    {r.comment && <p style={{ fontSize: 13.5, color: "var(--slate)" }}>{r.comment}</p>}
+                    <div style={{ fontSize: 11.5, color: "var(--slate)", marginTop: 8 }}>
+                      {new Date(r.created_at).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            )}
+          </section>
+        </div>
+
+        <BookingSidebar
+          provider={providerForBooking}
+          isLoggedIn={!!session}
+          userRole={session?.role}
+          rating={provider.rating}
+          reviewsCount={provider.reviews_count}
+          priceFrom={prices.length > 0 ? Math.min(...prices) : null}
+          city={cityName}
+          categoryIcon={cat.icon}
+        />
+      </div>
 
       <div className="mobile-cta-spacer" />
       <MobileStickyBook provider={providerForBooking} isLoggedIn={!!session} userRole={session?.role} priceFrom={prices.length > 0 ? Math.min(...prices) : null} />
