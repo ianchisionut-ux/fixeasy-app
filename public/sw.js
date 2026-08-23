@@ -1,5 +1,5 @@
-const CACHE_NAME = "fixeasy-v21";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/logo.png", "/hero-professionals.jpg", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/mark.png"];
+const CACHE_NAME = "fixeasy-v22";
+const APP_SHELL = ["/", "/manifest.webmanifest", "/logo.png", "/hero-professionals.jpg", "/site-bg-pattern.jpg", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/mark.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

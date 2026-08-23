@@ -44,7 +44,21 @@ export async function POST(request) {
       [providerId, date, startTime || null, endTime || null, (reason || "").trim() || null]
     );
 
-    return NextResponse.json({ block: result.rows[0] }, { status: 201 });
+    const row = result.rows[0];
+    return NextResponse.json(
+      {
+        block: {
+          id: row.id,
+          date: row.off_date instanceof Date
+            ? `${row.off_date.getFullYear()}-${String(row.off_date.getMonth() + 1).padStart(2, "0")}-${String(row.off_date.getDate()).padStart(2, "0")}`
+            : String(row.off_date).split("T")[0],
+          startTime: row.start_time,
+          endTime: row.end_time,
+          reason: row.reason,
+        },
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Eroare la adăugarea blocării." }, { status: 500 });

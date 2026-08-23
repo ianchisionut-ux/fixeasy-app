@@ -4,7 +4,6 @@ import HomeClient from "./HomeClient";
 import SiteHeader from "./SiteHeader";
 import { CATEGORIES_SEO, citySlug } from "../lib/seo";
 import { displayCity } from "../lib/geo";
-import { Search, CalendarDays, CheckCircle2, ClipboardList, MapPin, CalendarCheck } from "lucide-react";
 import SiteFooter from "./SiteFooter";
 
 export const dynamic = "force-dynamic";
@@ -91,66 +90,6 @@ export default async function HomePage() {
         userRole={session?.role}
       />
 
-      <section>
-        <div className="section-head">
-          <span className="eyebrow" style={{ background: "rgba(44,74,94,.1)", color: "var(--steel)" }}>Proces</span>
-          <h2>Cum funcționează</h2>
-          <p>Pași simpli, indiferent dacă cauți un profesionist sau vrei mai mulți clienți.</p>
-        </div>
-        <div className="how-split">
-          <div className="how-col client">
-            <h3>Pentru clienți</h3>
-            <div className="how-sub">De la căutare la lucrare finalizată</div>
-            <div className="how-step">
-              <div className="how-num"><Search size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Cauți în zona ta</div>
-                <div className="how-step-text">Filtrezi după meserie și oraș — vezi doar prestatori relevanți pentru tine.</div>
-              </div>
-            </div>
-            <div className="how-step">
-              <div className="how-num"><CalendarDays size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Alegi un slot liber</div>
-                <div className="how-step-text">Programezi direct în calendarul prestatorului, fără telefoane.</div>
-              </div>
-            </div>
-            <div className="how-step">
-              <div className="how-num"><CheckCircle2 size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Primești confirmare</div>
-                <div className="how-step-text">Notificare instant, plus status urmărit live în cont.</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="how-col provider">
-            <h3>Pentru prestatori</h3>
-            <div className="how-sub">De la înscriere la primul client nou</div>
-            <div className="how-step">
-              <div className="how-num"><ClipboardList size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Îți creezi profilul</div>
-                <div className="how-step-text">Adaugi serviciile, prețurile și orașul în care lucrezi.</div>
-              </div>
-            </div>
-            <div className="how-step">
-              <div className="how-num"><MapPin size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Apari clienților din zonă</div>
-                <div className="how-step-text">Ești vizibil automat clienților care caută în orașul tău.</div>
-              </div>
-            </div>
-            <div className="how-step">
-              <div className="how-num"><CalendarCheck size={16} strokeWidth={2.2} /></div>
-              <div>
-                <div className="how-step-title">Accepți programări</div>
-                <div className="how-step-text">Gestionezi totul dintr-un calendar simplu — acceptă sau respinge într-un click.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {!session && (
         <div className="cta-band">

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { nowInBucharest, isoOf } from "../../lib/date";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../../lib/seo";
-import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon, AlertTriangle } from "lucide-react";
+import { Phone, MapPin, Link as LinkIcon, Camera, X as XIcon, AlertTriangle, Lock } from "lucide-react";
 import { formatDuration, toMinutes, splitMinutes } from "../../lib/duration";
 import { resizeImage } from "../../lib/imageResize";
 import { toast } from "../Toast";
@@ -32,6 +32,7 @@ function monthGrid(year, month) {
 export default function DashboardApp({ providerName, initialBookings, initialProfile, initialServices, initialGallery, initialSchedule, initialTimeOff }) {
   const [tab, setTab] = useState("calendar");
   const [bookings, setBookings] = useState(initialBookings);
+  const [timeOffBlocks, setTimeOffBlocks] = useState(initialTimeOff || []);
 
   const pending = bookings.filter((b) => b.status === "pending").length;
   const confirmed = bookings.filter((b) => b.status === "confirmed").length;
@@ -48,6 +49,32 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
       toast(labels[status] || "Status actualizat");
     } else {
       toast("Eroare la actualizarea programării", "error");
+    }
+  }
+
+  async function addTimeOffBlock({ date, startTime, endTime, reason }) {
+    const res = await fetch("/api/provider/timeoff", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date, startTime, endTime, reason }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setTimeOffBlocks((prev) => [...prev, data.block].sort((a, b) => a.date.localeCompare(b.date)));
+      toast(startTime ? "Interval blocat" : "Zi blocată");
+      return true;
+    }
+    toast(data.error || "Eroare la blocare", "error");
+    return false;
+  }
+
+  async function removeTimeOffBlock(id) {
+    const res = await fetch(`/api/provider/timeoff/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setTimeOffBlocks((prev) => prev.filter((b) => b.id !== id));
+      toast("Blocare eliminată");
+    } else {
+      toast("Eroare la ștergere", "error");
     }
   }
 
@@ -73,9 +100,20 @@ export default function DashboardApp({ providerName, initialBookings, initialPro
 
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         {tab === "calendar" ? (
-          <CalendarPanel bookings={bookings} onUpdateStatus={updateStatus} />
+          <CalendarPanel
+            bookings={bookings}
+            onUpdateStatus={updateStatus}
+            timeOffBlocks={timeOffBlocks}
+            onAddBlock={addTimeOffBlock}
+            onRemoveBlock={removeTimeOffBlock}
+          />
         ) : tab === "program" ? (
-          <ScheduleManager initialSchedule={initialSchedule} initialTimeOff={initialTimeOff} />
+          <ScheduleManager
+            initialSchedule={initialSchedule}
+            timeOffBlocks={timeOffBlocks}
+            onAddBlock={addTimeOffBlock}
+            onRemoveBlock={removeTimeOffBlock}
+          />
         ) : (
           <AccountPanel initialProfile={initialProfile} initialServices={initialServices} initialGallery={initialGallery} />
         )}
@@ -95,7 +133,7 @@ function Stat({ label, value }) {
 
 /* ---------------- CALENDAR ---------------- */
 
-function CalendarPanel({ bookings, onUpdateStatus }) {
+function CalendarPanel({ bookings, onUpdateStatus, timeOffBlocks, onAddBlock, onRemoveBlock }) {
   const [view, setView] = useState("luna"); // luna | saptamana | zi
   const [cursor, setCursor] = useState(nowInBucharest());
 
@@ -106,6 +144,14 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
     }
     return map;
   }, [bookings]);
+
+  const blocksByDate = useMemo(() => {
+    const map = {};
+    for (const b of timeOffBlocks || []) {
+      (map[b.date] ||= []).push(b);
+    }
+    return map;
+  }, [timeOffBlocks]);
 
   function shift(delta) {
     const d = new Date(cursor);
@@ -141,15 +187,24 @@ function CalendarPanel({ bookings, onUpdateStatus }) {
       </div>
 
       <div className="dash-body">
-        {view === "luna" && <MonthView cursor={cursor} byDate={byDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
-        {view === "saptamana" && <WeekView cursor={cursor} byDate={byDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
-        {view === "zi" && <DayView cursor={cursor} bookings={byDate[isoOf(cursor)] || []} onUpdateStatus={onUpdateStatus} />}
+        {view === "luna" && <MonthView cursor={cursor} byDate={byDate} blocksByDate={blocksByDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
+        {view === "saptamana" && <WeekView cursor={cursor} byDate={byDate} blocksByDate={blocksByDate} onPickDay={(d) => { setCursor(d); setView("zi"); }} />}
+        {view === "zi" && (
+          <DayView
+            cursor={cursor}
+            bookings={byDate[isoOf(cursor)] || []}
+            blocks={blocksByDate[isoOf(cursor)] || []}
+            onUpdateStatus={onUpdateStatus}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function MonthView({ cursor, byDate, onPickDay }) {
+function MonthView({ cursor, byDate, blocksByDate, onPickDay }) {
   const cells = monthGrid(cursor.getFullYear(), cursor.getMonth());
   const todayIso = isoOf(nowInBucharest());
   return (
@@ -164,6 +219,8 @@ function MonthView({ cursor, byDate, onPickDay }) {
           if (!d) return <div key={i} />;
           const iso = isoOf(d);
           const items = byDate[iso] || [];
+          const blocks = blocksByDate[iso] || [];
+          const fullDayBlocked = blocks.some((b) => !b.startTime && !b.endTime);
           const isToday = iso === todayIso;
           return (
             <div
@@ -171,18 +228,24 @@ function MonthView({ cursor, byDate, onPickDay }) {
               onClick={() => onPickDay(d)}
               style={{
                 minHeight: 68, borderRadius: 8, padding: 6, cursor: "pointer",
-                background: isToday ? "rgba(79,168,216,.15)" : "#0B3552",
-                border: isToday ? "1.5px solid var(--orange)" : "1px solid #1C4F73",
+                background: fullDayBlocked ? "rgba(201,76,60,.12)" : isToday ? "rgba(79,168,216,.15)" : "#0B3552",
+                border: fullDayBlocked ? "1.5px solid rgba(201,76,60,.4)" : isToday ? "1.5px solid var(--orange)" : "1px solid #1C4F73",
               }}
             >
-              <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "var(--font)", marginBottom: 4 }}>{d.getDate()}</div>
-              {items.slice(0, 2).map((b) => (
+              <div style={{ fontSize: 12, color: "var(--paper)", fontFamily: "var(--font)", marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
+                {d.getDate()}
+                {fullDayBlocked && <Lock size={10} strokeWidth={2.4} color="#E4746A" />}
+              </div>
+              {!fullDayBlocked && items.slice(0, 2).map((b) => (
                 <div key={b.id} className={"status " + b.status} style={{ fontSize: 9, marginBottom: 2, display: "block", textAlign: "left", padding: "2px 5px", borderLeft: b.priority === "urgent" ? "2px solid #C94C3C" : "none" }}>
                   {b.time}
                 </div>
               ))}
-              {items.length > 2 && (
+              {!fullDayBlocked && items.length > 2 && (
                 <div style={{ fontSize: 9.5, color: "rgba(243,248,251,.5)" }}>+{items.length - 2} mai multe</div>
+              )}
+              {blocks.length > 0 && !fullDayBlocked && (
+                <div style={{ fontSize: 8.5, color: "#E4746A", marginTop: 2 }}>{blocks.length} blocare(i)</div>
               )}
             </div>
           );
@@ -192,7 +255,7 @@ function MonthView({ cursor, byDate, onPickDay }) {
   );
 }
 
-function WeekView({ cursor, byDate, onPickDay }) {
+function WeekView({ cursor, byDate, blocksByDate, onPickDay }) {
   const monday = startOfWeek(cursor);
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
@@ -204,16 +267,31 @@ function WeekView({ cursor, byDate, onPickDay }) {
       {days.map((d) => {
         const iso = isoOf(d);
         const items = byDate[iso] || [];
+        const blocks = blocksByDate[iso] || [];
+        const fullDayBlocked = blocks.some((b) => !b.startTime && !b.endTime);
         return (
-          <div key={iso} onClick={() => onPickDay(d)} style={{ cursor: "pointer", background: "#0B3552", border: "1px solid #1C4F73", borderRadius: 8, padding: 8, minHeight: 140 }}>
-            <div style={{ fontSize: 11, color: "rgba(243,248,251,.6)", marginBottom: 6, fontFamily: "var(--font)" }}>
-              {WEEKDAYS_SHORT[(d.getDay() + 6) % 7]} {d.getDate()}
+          <div
+            key={iso}
+            onClick={() => onPickDay(d)}
+            style={{
+              cursor: "pointer", borderRadius: 8, padding: 8, minHeight: 140,
+              background: fullDayBlocked ? "rgba(201,76,60,.12)" : "#0B3552",
+              border: fullDayBlocked ? "1.5px solid rgba(201,76,60,.4)" : "1px solid #1C4F73",
+            }}
+          >
+            <div style={{ fontSize: 11, color: "rgba(243,248,251,.6)", marginBottom: 6, fontFamily: "var(--font)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{WEEKDAYS_SHORT[(d.getDay() + 6) % 7]} {d.getDate()}</span>
+              {fullDayBlocked && <Lock size={11} strokeWidth={2.4} color="#E4746A" />}
             </div>
-            {items.map((b) => (
-              <div key={b.id} className={"status " + b.status} style={{ display: "block", marginBottom: 4, fontSize: 10, padding: "3px 6px", borderLeft: b.priority === "urgent" ? "2px solid #C94C3C" : "none" }}>
-                {b.time} · {b.clientName.split(" ")[0]}
-              </div>
-            ))}
+            {fullDayBlocked ? (
+              <div style={{ fontSize: 10, color: "#E4746A" }}>Zi blocată</div>
+            ) : (
+              items.map((b) => (
+                <div key={b.id} className={"status " + b.status} style={{ display: "block", marginBottom: 4, fontSize: 10, padding: "3px 6px", borderLeft: b.priority === "urgent" ? "2px solid #C94C3C" : "none" }}>
+                  {b.time} · {b.clientName.split(" ")[0]}
+                </div>
+              ))
+            )}
           </div>
         );
       })}
@@ -221,15 +299,96 @@ function WeekView({ cursor, byDate, onPickDay }) {
   );
 }
 
-function DayView({ cursor, bookings, onUpdateStatus }) {
+function DayView({ cursor, bookings, blocks, onUpdateStatus, onAddBlock, onRemoveBlock }) {
+  const [showBlockForm, setShowBlockForm] = useState(false);
+  const [allDay, setAllDay] = useState(true);
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
+  const [reason, setReason] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const fullDayBlock = blocks.find((b) => !b.startTime && !b.endTime);
+  const partialBlocks = blocks.filter((b) => b.startTime && b.endTime);
+
   const sorted = [...bookings].sort((a, b) => {
     if (a.priority !== b.priority) return a.priority === "urgent" ? -1 : 1;
     return a.time.localeCompare(b.time);
   });
-  if (sorted.length === 0) {
-    return <p style={{ color: "rgba(243,248,251,.6)", textAlign: "center", padding: "24px 0" }}>Nicio programare în această zi.</p>;
+
+  async function submitBlock() {
+    setSaving(true);
+    const iso = isoOf(cursor);
+    const ok = await onAddBlock({
+      date: iso,
+      startTime: allDay ? null : startTime,
+      endTime: allDay ? null : endTime,
+      reason,
+    });
+    setSaving(false);
+    if (ok) {
+      setShowBlockForm(false);
+      setReason("");
+    }
   }
+
   return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+        {!showBlockForm && (
+          <button className="btn btn-outline-dark" style={{ padding: "7px 14px", fontSize: 12.5 }} onClick={() => setShowBlockForm(true)}>
+            <Lock size={13} strokeWidth={2.2} /> Blochează ziua / un interval
+          </button>
+        )}
+      </div>
+
+      {showBlockForm && (
+        <div className="panel-card" style={{ background: "#0F3F60", border: "1px solid #1C4F73", marginBottom: 14 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 10 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--paper)" }}>
+              <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} style={{ width: "auto" }} />
+              Toată ziua
+            </label>
+            {!allDay && (
+              <>
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} style={{ width: 110 }} />
+                <span style={{ color: "var(--paper)" }}>–</span>
+                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} style={{ width: 110 }} />
+              </>
+            )}
+          </div>
+          <input placeholder="Motiv (opțional)" value={reason} onChange={(e) => setReason(e.target.value)} style={{ marginBottom: 10 }} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn btn-orange" style={{ padding: "8px 16px" }} onClick={submitBlock} disabled={saving}>
+              {saving ? "Se salvează…" : "Blochează"}
+            </button>
+            <button className="btn btn-outline-dark" style={{ padding: "8px 16px" }} onClick={() => setShowBlockForm(false)}>Anulează</button>
+          </div>
+        </div>
+      )}
+
+      {fullDayBlock && (
+        <div className="dash-row" style={{ background: "rgba(201,76,60,.14)", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#E4746A" }}>
+            <Lock size={14} strokeWidth={2.2} />
+            <span>Zi complet blocată{fullDayBlock.reason ? ` · ${fullDayBlock.reason}` : ""}</span>
+          </div>
+          <button className="btn btn-outline-dark" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onRemoveBlock(fullDayBlock.id)}>Deblochează</button>
+        </div>
+      )}
+
+      {partialBlocks.map((b) => (
+        <div key={b.id} className="dash-row" style={{ background: "rgba(201,76,60,.14)", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#E4746A" }}>
+            <Lock size={14} strokeWidth={2.2} />
+            <span>{b.startTime} – {b.endTime} blocat{b.reason ? ` · ${b.reason}` : ""}</span>
+          </div>
+          <button className="btn btn-outline-dark" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onRemoveBlock(b.id)}>Șterge</button>
+        </div>
+      ))}
+
+      {fullDayBlock ? null : sorted.length === 0 ? (
+        <p style={{ color: "rgba(243,248,251,.6)", textAlign: "center", padding: "24px 0" }}>Nicio programare în această zi.</p>
+      ) : (
     <div>
       {sorted.map((b) => (
         <div className="dash-row" key={b.id} style={b.priority === "urgent" ? { borderLeft: "3px solid #C94C3C" } : undefined}>
@@ -264,6 +423,8 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
           </div>
         </div>
       ))}
+    </div>
+      )}
     </div>
   );
 }
@@ -645,7 +806,7 @@ function GalleryManager({ initialGallery }) {
 
 const WEEKDAY_NAMES = ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"];
 
-function ScheduleManager({ initialSchedule, initialTimeOff }) {
+function ScheduleManager({ initialSchedule, timeOffBlocks, onAddBlock, onRemoveBlock }) {
   const defaultDay = (weekday) => ({ weekday, isWorking: weekday !== 6, startTime: "09:00", endTime: "17:00" });
   const initial = Array.from({ length: 7 }, (_, w) => {
     const existing = initialSchedule?.find((d) => d.weekday === w);
@@ -656,7 +817,6 @@ function ScheduleManager({ initialSchedule, initialTimeOff }) {
 
   const [schedule, setSchedule] = useState(initial);
   const [saving, setSaving] = useState(false);
-  const [blocks, setBlocks] = useState(initialTimeOff || []);
   const [adding, setAdding] = useState(false);
   const [blockForm, setBlockForm] = useState({ date: "", allDay: true, startTime: "09:00", endTime: "17:00", reason: "" });
   const [error, setError] = useState("");
@@ -690,36 +850,15 @@ function ScheduleManager({ initialSchedule, initialTimeOff }) {
       setError("Alege o dată.");
       return;
     }
-    try {
-      const res = await fetch("/api/provider/timeoff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date: blockForm.date,
-          startTime: blockForm.allDay ? null : blockForm.startTime,
-          endTime: blockForm.allDay ? null : blockForm.endTime,
-          reason: blockForm.reason,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la adăugare.");
-      setBlocks((prev) => [...prev, data.block].sort((a, b) => a.date.localeCompare(b.date)));
+    const ok = await onAddBlock({
+      date: blockForm.date,
+      startTime: blockForm.allDay ? null : blockForm.startTime,
+      endTime: blockForm.allDay ? null : blockForm.endTime,
+      reason: blockForm.reason,
+    });
+    if (ok) {
       setBlockForm({ date: "", allDay: true, startTime: "09:00", endTime: "17:00", reason: "" });
       setAdding(false);
-      toast("Blocare adăugată");
-    } catch (err) {
-      setError(err.message);
-      toast(err.message, "error");
-    }
-  }
-
-  async function deleteBlock(id) {
-    const res = await fetch(`/api/provider/timeoff/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setBlocks((prev) => prev.filter((b) => b.id !== id));
-      toast("Blocare ștearsă");
-    } else {
-      toast("Eroare la ștergere", "error");
     }
   }
 
@@ -773,11 +912,12 @@ function ScheduleManager({ initialSchedule, initialTimeOff }) {
         <h3 style={{ fontSize: 16, marginBottom: 4 }}>Blocări punctuale</h3>
         <p style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 16 }}>
           Blochează o zi întreagă sau doar un interval orar — concediu, urgențe personale, programări private etc.
+          Poți bloca și direct din tab-ul Calendar, pe ziua respectivă.
         </p>
 
-        {blocks.length === 0 && <p style={{ fontSize: 13, color: "var(--slate)", marginBottom: 14 }}>Nicio blocare programată.</p>}
+        {(!timeOffBlocks || timeOffBlocks.length === 0) && <p style={{ fontSize: 13, color: "var(--slate)", marginBottom: 14 }}>Nicio blocare programată.</p>}
 
-        {blocks.map((b) => (
+        {(timeOffBlocks || []).map((b) => (
           <div key={b.id} className="dash-row" style={{ background: "var(--paper)", color: "var(--graphite)" }}>
             <div>
               <b>{formatBlockDate(b.date)}</b>{" "}
@@ -786,7 +926,7 @@ function ScheduleManager({ initialSchedule, initialTimeOff }) {
                 {b.reason ? ` · ${b.reason}` : ""}
               </span>
             </div>
-            <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "#B3261E", borderColor: "#F3C6C2" }} onClick={() => deleteBlock(b.id)}>
+            <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "#B3261E", borderColor: "#F3C6C2" }} onClick={() => onRemoveBlock(b.id)}>
               Șterge
             </button>
           </div>
