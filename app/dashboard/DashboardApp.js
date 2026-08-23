@@ -229,13 +229,16 @@ function DayView({ cursor, bookings, onUpdateStatus }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className={"status " + b.status}>
-              {b.status === "pending" ? "În așteptare" : b.status === "confirmed" ? "Confirmată" : b.status}
+              {b.status === "pending" ? "În așteptare" : b.status === "confirmed" ? "Confirmată" : b.status === "completed" ? "Finalizată" : b.status}
             </span>
             {b.status === "pending" && (
               <>
                 <button className="btn btn-steel" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onUpdateStatus(b.rawId, "confirmed")}>Acceptă</button>
                 <button className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 12, color: "var(--paper)", borderColor: "rgba(243,248,251,.3)" }} onClick={() => onUpdateStatus(b.rawId, "cancelled")}>Respinge</button>
               </>
+            )}
+            {b.status === "confirmed" && (
+              <button className="btn btn-steel" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => onUpdateStatus(b.rawId, "completed")}>Marchează finalizată</button>
             )}
           </div>
         </div>

@@ -3,6 +3,7 @@ import { query } from "../../lib/db";
 import { getSession } from "../../lib/auth";
 import SiteHeader from "../SiteHeader";
 import DashboardApp from "./DashboardApp";
+import SiteFooter from "../SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -63,9 +64,7 @@ export default async function DashboardPage() {
         initialServices={servicesResult.rows}
       />
 
-      <footer>
-        <b>FixEasy</b> — dashboard conectat la PostgreSQL.
-      </footer>
+      <SiteFooter />
     </>
   );
 }

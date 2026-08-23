@@ -4,6 +4,7 @@ import { getSession } from "../../../../lib/auth";
 import { categoryBySlug, citySlug, providerSlug, parseProviderId } from "../../../../lib/seo";
 import { displayCity } from "../../../../lib/geo";
 import SiteHeader from "../../../SiteHeader";
+import SiteFooter from "../../../SiteFooter";
 import BookNowButton from "./BookNowButton";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,14 @@ export default async function ProviderPage({ params }) {
   const [session, provider] = await Promise.all([getSession(), getProvider(id)]);
   if (!provider) notFound();
 
+  const reviewsResult = await query(
+    `SELECT r.rating, r.comment, r.created_at, u.name AS client_name
+     FROM reviews r JOIN users u ON u.id = r.client_id
+     WHERE r.provider_id = $1 ORDER BY r.created_at DESC LIMIT 20`,
+    [id]
+  );
+  const reviews = reviewsResult.rows;
+
   // Canonicalizeaza URL-ul: daca slug-ul din adresa nu (mai) corespunde
   // datelor reale (nume/categorie/oras schimbate), redirectioneaza permanent
   // catre URL-ul corect — pastreaza SEO "link juice" chiar daca link-uri vechi ramase.
@@ -90,6 +99,15 @@ export default async function ProviderPage({ params }) {
       price: Number(s.price),
       priceCurrency: "RON",
     })),
+    ...(reviews.length > 0 && {
+      review: reviews.slice(0, 10).map((r) => ({
+        "@type": "Review",
+        author: { "@type": "Person", name: r.client_name },
+        reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+        reviewBody: r.comment || undefined,
+        datePublished: new Date(r.created_at).toISOString().split("T")[0],
+      })),
+    }),
   };
 
   const providerForBooking = {
@@ -136,9 +154,31 @@ export default async function ProviderPage({ params }) {
         </div>
       </section>
 
-      <footer>
-        <b>FixEasy</b> — marketplace pentru profesioniști verificați.
-      </footer>
+      <section style={{ maxWidth: 720 }}>
+        <div className="section-head" style={{ textAlign: "left", margin: "0 0 24px" }}>
+          <h2>Recenzii ({provider.reviews_count})</h2>
+        </div>
+        {reviews.length === 0 ? (
+          <p style={{ color: "var(--slate)", fontSize: 14 }}>Niciun client nu a lăsat încă o recenzie.</p>
+        ) : (
+          <div style={{ display: "grid", gap: 12 }}>
+            {reviews.map((r, i) => (
+              <div key={i} className="panel-card">
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <b style={{ fontSize: 14 }}>{r.client_name}</b>
+                  <span style={{ color: "var(--orange-dark)", fontWeight: 700 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                </div>
+                {r.comment && <p style={{ fontSize: 13.5, color: "var(--slate)" }}>{r.comment}</p>}
+                <div style={{ fontSize: 11.5, color: "var(--slate)", marginTop: 8 }}>
+                  {new Date(r.created_at).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <SiteFooter />
     </>
   );
 }

@@ -4,6 +4,7 @@ import { getSession } from "../../../lib/auth";
 import { categoryBySlug, cityFromSlug, providerSlug } from "../../../lib/seo";
 import { displayCity } from "../../../lib/geo";
 import SiteHeader from "../../SiteHeader";
+import SiteFooter from "../../SiteFooter";
 import ProviderGrid from "./ProviderGrid";
 
 export const dynamic = "force-dynamic";
@@ -98,9 +99,7 @@ export default async function CategoryCityPage({ params }) {
         )}
       </section>
 
-      <footer>
-        <b>FixEasy</b> — marketplace pentru profesioniști verificați.
-      </footer>
+      <SiteFooter />
     </>
   );
 }

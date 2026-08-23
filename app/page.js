@@ -4,6 +4,7 @@ import HomeClient from "./HomeClient";
 import SiteHeader from "./SiteHeader";
 import { CATEGORIES_SEO, citySlug } from "../lib/seo";
 import { displayCity } from "../lib/geo";
+import SiteFooter from "./SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -151,9 +152,9 @@ export default async function HomePage() {
         </div>
       )}
 
-      <footer>
+      <SiteFooter>
         {topLinks.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, marginBottom: 20, fontSize: 12.5 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, marginBottom: 12, fontSize: 12.5 }}>
             {topLinks.map((l) => {
               const cat = CATEGORIES_SEO.find((c) => c.category === l.category);
               if (!cat) return null;
@@ -165,8 +166,7 @@ export default async function HomePage() {
             })}
           </div>
         )}
-        <b>FixEasy</b> — date reale, salvate în PostgreSQL.
-      </footer>
+      </SiteFooter>
     </>
   );
 }

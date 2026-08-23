@@ -18,6 +18,9 @@ export default function SiteHeader({ session, links = [] }) {
   if (session?.role === "provider") {
     allLinks.push({ href: "/dashboard", label: "Dashboard prestator" });
   }
+  if (session?.role === "client") {
+    allLinks.push({ href: "/programarile-mele", label: "Programările mele" });
+  }
 
   return (
     <header>
