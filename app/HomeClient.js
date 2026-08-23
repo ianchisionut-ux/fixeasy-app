@@ -8,6 +8,7 @@ import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
 import { MapPin, Search } from "lucide-react";
 import BookingModal from "./BookingModal";
 import SkeletonProviderCard from "./SkeletonProviderCard";
+import CardShareButton from "./CardShareButton";
 
 const CATEGORIES = ["Toți", ...CATEGORIES_SEO.map((c) => c.category)];
 
@@ -173,6 +174,7 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
               return (
               <div className="prov-card" key={p.id}>
                 <div className="prov-top">
+                  {href && <CardShareButton url={href} title={`${p.name} — ${p.cat} | FixEasy`} />}
                   <div className="prov-head">
                     <div className="avatar" style={p.photo ? { padding: 0, overflow: "hidden" } : undefined}>
                       {p.photo ? (

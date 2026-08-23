@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import { providerSlug } from "../../../lib/seo";
 import { displayCity } from "../../../lib/geo";
 import BookingModal from "../../BookingModal";
+import CardShareButton from "../../CardShareButton";
 
 export default function ProviderGrid({ providers, categorySlug, citySlug, isLoggedIn, userRole }) {
   const [bookingFor, setBookingFor] = useState(null);
@@ -15,6 +16,7 @@ export default function ProviderGrid({ providers, categorySlug, citySlug, isLogg
         {providers.map((p) => (
           <div className="prov-card" key={p.id}>
             <div className="prov-top">
+              <CardShareButton url={`/${categorySlug}/${citySlug}/${providerSlug(p.name, p.id)}`} title={`${p.name} — ${p.cat} | FixEasy`} />
               <div className="prov-head">
                 <div className="avatar" style={p.photo ? { padding: 0, overflow: "hidden" } : undefined}>
                   {p.photo ? <img src={p.photo} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.init}
