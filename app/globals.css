@@ -26,9 +26,8 @@ body{
 }
 body::before{
   content:'';
-  position:fixed; inset:-20px; z-index:-1;
+  position:fixed; inset:0; z-index:-1;
   background:url('/site-bg-pattern.jpg') center top / cover no-repeat;
-  filter:blur(3px);
 }
 h1,h2,h3{font-family:var(--font); font-weight:800; letter-spacing:-0.02em;}
 .mono{font-family:var(--font); font-variant-numeric:tabular-nums;}
