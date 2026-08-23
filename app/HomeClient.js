@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { stripDiacritics, detectCity, COMMON_CITIES, displayCity } from "../lib/geo";
 import { CATEGORIES_SEO, citySlug, providerSlug } from "../lib/seo";
 import { MapPin, Search } from "lucide-react";
@@ -91,7 +92,10 @@ export default function HomeClient({ initialProviders, isLoggedIn, userRole }) {
   return (
     <>
       <div className="hero">
-        <div className="hero-photo-bg" />
+        <div className="hero-photo-img">
+          <Image src="/hero-professionals.jpg" alt="" fill priority sizes="100vw" />
+        </div>
+        <div className="hero-photo-overlay" />
         <span className="eyebrow">
           ● {providers.length} profesioniști verificați {cityDisplay ? `în ${cityDisplay}` : "activi azi"}
         </span>

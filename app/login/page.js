@@ -3,7 +3,7 @@ import SiteHeader from "../SiteHeader";
 import LoginForm from "./LoginForm";
 
 export const metadata = {
-  title: "Autentificare | FixEasy",
+  title: "Autentificare",
   robots: { index: false, follow: true },
 };
 

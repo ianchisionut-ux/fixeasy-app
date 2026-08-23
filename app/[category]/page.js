@@ -14,9 +14,14 @@ export async function generateMetadata({ params }) {
   const cat = categoryBySlug(categorySlug);
   if (!cat) return {};
   return {
-    title: `${cat.label} verificați lângă tine | FixEasy`,
+    title: `${cat.label} verificați lângă tine`,
     description: `Găsește ${cat.label.toLowerCase()} verificați în orașul tău. Programează online, rapid și fără telefoane.`,
     alternates: { canonical: `/${cat.slug}` },
+    openGraph: {
+      title: `${cat.label} verificați lângă tine | FixEasy`,
+      description: `Găsește ${cat.label.toLowerCase()} verificați în orașul tău. Programează online, rapid și fără telefoane.`,
+      url: `/${cat.slug}`,
+    },
   };
 }
 

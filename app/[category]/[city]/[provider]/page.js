@@ -40,9 +40,15 @@ export async function generateMetadata({ params }) {
   const cityName = displayCity(provider.city);
   const canonicalPath = `/${cat.slug}/${citySlug(provider.city)}/${providerSlug(provider.business_name, provider.id)}`;
   return {
-    title: `${provider.business_name} — ${provider.category} din ${cityName} | FixEasy`,
+    title: `${provider.business_name} — ${provider.category} din ${cityName}`,
     description: `${provider.business_name}, ${provider.category.toLowerCase()} verificat din ${cityName}. Rating ${provider.rating}/5 din ${provider.reviews_count} recenzii. Programează online.`,
     alternates: { canonical: canonicalPath },
+    openGraph: {
+      title: `${provider.business_name} — ${provider.category} din ${cityName} | FixEasy`,
+      description: `Rating ${provider.rating}/5 din ${provider.reviews_count} recenzii. Programează online, fără telefoane.`,
+      url: canonicalPath,
+      type: "profile",
+    },
   };
 }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 
 export default function SiteHeader({ session, links = [] }) {
@@ -26,7 +27,9 @@ export default function SiteHeader({ session, links = [] }) {
   return (
     <header>
       <div className="nav">
-        <a href="/" className="logo"><img src="/logo.png" alt="FixEasy.ro" /></a>
+        <a href="/" className="logo">
+          <Image src="/logo.png" alt="FixEasy.ro" width={249} height={177} priority />
+        </a>
 
         <nav className="nav-links">
           {allLinks.map((l) => (

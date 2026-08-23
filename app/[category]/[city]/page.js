@@ -18,9 +18,14 @@ export async function generateMetadata({ params }) {
   const cityCode = cityFromSlug(citySlugParam);
   const cityName = displayCity(cityCode);
   return {
-    title: `${cat.label} din ${cityName} — Programează online | FixEasy`,
+    title: `${cat.label} din ${cityName} — Programează online`,
     description: `${cat.label} verificați din ${cityName}. Vezi prețuri, recenzii și programează direct online, fără telefoane.`,
     alternates: { canonical: `/${cat.slug}/${citySlugParam}` },
+    openGraph: {
+      title: `${cat.label} din ${cityName} — Programează online | FixEasy`,
+      description: `${cat.label} verificați din ${cityName}. Vezi prețuri, recenzii și programează direct online, fără telefoane.`,
+      url: `/${cat.slug}/${citySlugParam}`,
+    },
   };
 }
 

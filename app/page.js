@@ -68,9 +68,20 @@ export default async function HomePage() {
     },
   };
 
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "FixEasy",
+    url: "https://fixeasy-app-pmcustoms.vercel.app",
+    logo: "https://fixeasy-app-pmcustoms.vercel.app/icons/icon-512.png",
+    description: "Marketplace pentru profesioniști verificați — instalații sanitare, electrice, amenajări, reparații electrocasnice și mecanici auto.",
+    areaServed: { "@type": "Country", name: "România" },
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
       <SiteHeader session={session} links={[{ href: "#marketplace", label: "Profesioniști" }]} />
 
       <HomeClient

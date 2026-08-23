@@ -8,7 +8,7 @@ import SiteFooter from "../SiteFooter";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Programările mele | FixEasy",
+  title: "Programările mele",
   robots: { index: false, follow: false },
 };
 

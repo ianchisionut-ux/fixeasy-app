@@ -75,11 +75,15 @@ header{
   position:relative; overflow:hidden; background:var(--graphite); color:var(--paper);
   padding:72px 24px 64px; text-align:center;
 }
-.hero .hero-photo-bg{
-  position:absolute; inset:-30px; z-index:0;
-  background-image:linear-gradient(135deg, rgba(11,53,82,.88), rgba(11,53,82,.80)), url('/hero-professionals.jpg');
-  background-size:cover; background-position:center 30%;
+.hero .hero-photo-img{
+  position:absolute; inset:-30px; z-index:0; overflow:hidden;
   filter:blur(5px);
+  pointer-events:none;
+}
+.hero .hero-photo-img img{object-fit:cover; object-position:center 30%;}
+.hero .hero-photo-overlay{
+  position:absolute; inset:-30px; z-index:0;
+  background:linear-gradient(135deg, rgba(11,53,82,.88), rgba(11,53,82,.80));
   pointer-events:none;
 }
 .hero::before, .hero::after{

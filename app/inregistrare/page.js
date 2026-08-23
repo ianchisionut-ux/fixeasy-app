@@ -3,7 +3,7 @@ import SiteHeader from "../SiteHeader";
 import RegisterForm from "./RegisterForm";
 
 export const metadata = {
-  title: "Creează cont | FixEasy",
+  title: "Creează cont",
   robots: { index: false, follow: true },
 };
 

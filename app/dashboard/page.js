@@ -8,7 +8,7 @@ import SiteFooter from "../SiteFooter";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Dashboard prestator | FixEasy",
+  title: "Dashboard prestator",
   robots: { index: false, follow: false },
 };
 
